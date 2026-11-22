@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { OfferDTO, OfferStatus } from '@agri/contracts';
 import { useSession } from '../../../shared/hooks/useAuth';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatVND } from '../../../shared/utils/formatters';
 import { OfferCard } from '../components/OfferCard';
 import { useAcceptOffer, useCancelOffer, useOffers, useRejectOffer } from '../hooks/useOffers';
@@ -75,7 +76,8 @@ export function MyOffersPage() {
           </p>
         </div>
         <Link to={isFarmer ? '/bai-dang' : '/thi-truong'} className="header-action-btn secondary">
-          {isFarmer ? '🌾 Quản lý bài đăng bán lúa' : '🛒 Khám phá thị trường lúa'}
+          <UiIcon name={isFarmer ? 'rice' : 'bag'} size={16} />{' '}
+          {isFarmer ? 'Quản lý bài đăng bán lúa' : 'Khám phá thị trường lúa'}
         </Link>
       </div>
 
@@ -83,7 +85,7 @@ export function MyOffersPage() {
       <div className="farmer-metrics-row">
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            📋
+            <UiIcon name="document" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">
@@ -95,7 +97,7 @@ export function MyOffersPage() {
 
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            ⏳
+            <UiIcon name="clock" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">
@@ -107,7 +109,7 @@ export function MyOffersPage() {
 
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            💬
+            <UiIcon name="chat" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">Đã được duyệt (Sẵn sàng Chat)</span>
@@ -180,7 +182,7 @@ export function MyOffersPage() {
       ) : isError ? (
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không thể tải danh sách báo giá</h3>
           <p>{error?.message || 'Có lỗi kết nối máy chủ.'}</p>
@@ -191,7 +193,7 @@ export function MyOffersPage() {
       ) : !data || data.items.length === 0 ? (
         <div className="empty-panel">
           <span className="empty-icon" aria-hidden="true">
-            🛒
+            <UiIcon name="bag" size={28} />
           </span>
           <h3>Bạn chưa có báo giá nào {statusFilter ? `ở trạng thái ${statusFilter}` : ''}</h3>
           <p>
@@ -204,7 +206,8 @@ export function MyOffersPage() {
             className="primary-button"
             style={{ marginTop: '12px' }}
           >
-            {isFarmer ? '🌾 Xem bài đăng của tôi' : '🛒 Đến sàn thị trường lúa ngay'}
+            <UiIcon name={isFarmer ? 'rice' : 'bag'} size={16} />{' '}
+            {isFarmer ? 'Xem bài đăng của tôi' : 'Đến sàn thị trường lúa ngay'}
           </Link>
         </div>
       ) : (
@@ -271,12 +274,12 @@ export function MyOffersPage() {
               disabled={cancelMutation.isPending}
               aria-label="Đóng"
             >
-              ✕
+              <UiIcon name="close" size={18} />
             </button>
 
             <div className="modal-header">
               <span className="modal-leaf" aria-hidden="true">
-                ↩️
+                <UiIcon name="undo" size={22} />
               </span>
               <div>
                 <h3 id="cancel-modal-title">Rút lại báo giá này?</h3>
@@ -342,7 +345,7 @@ export function MyOffersPage() {
               disabled={acceptMutation.isPending}
               aria-label="Đóng"
             >
-              ✕
+              <UiIcon name="close" size={18} />
             </button>
             <div className="modal-header">
               <div>
@@ -406,7 +409,7 @@ export function MyOffersPage() {
               disabled={rejectMutation.isPending}
               aria-label="Đóng"
             >
-              ✕
+              <UiIcon name="close" size={18} />
             </button>
             <div className="modal-header">
               <div>

@@ -10,7 +10,7 @@ import {
   useSeasonReport,
   workTypeLabels,
 } from '../api/farmingApi';
-import { formatYield } from '../../../shared/utils/formatters';
+import { formatArea, formatYield } from '../../../shared/utils/formatters';
 import './farming.css';
 
 type Page = 'plots' | 'journal' | 'costs';
@@ -102,11 +102,8 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
               ))}
             </select>
             {plot && (
-              <small>
-                {[
-                  plot.area ? `Diện tích ${Number(plot.area).toLocaleString('vi-VN')} m²` : null,
-                  plot.location,
-                ]
+              <small className="tabular-nums">
+                {[plot.area ? `Diện tích ${formatArea(Number(plot.area))}` : null, plot.location]
                   .filter(Boolean)
                   .join(' · ')}
               </small>
@@ -167,9 +164,9 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
                   <li key={item.plotId}>
                     <div>
                       <strong>{item.name}</strong>
-                      <small>
+                      <small className="tabular-nums">
                         {item.location}
-                        {item.area ? ` · ${Number(item.area).toLocaleString('vi-VN')} m²` : ''}
+                        {item.area ? ` · ${formatArea(Number(item.area))}` : ''}
                       </small>
                     </div>
                     <button

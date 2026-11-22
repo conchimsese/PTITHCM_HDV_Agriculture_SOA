@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCreateListing } from '../hooks/useCreateListing';
-import { formatVND, formatYield } from '../../../shared/utils/formatters';
+import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { tradingApi } from '../../../shared/api/runtime';
 import { useSession } from '../../../shared/hooks/useAuth';
 import { usePlotSeasons, usePlots } from '../../farming/api/farmingApi';
@@ -221,7 +222,9 @@ export function CreateListingForm() {
     <div className="create-listing-card">
       {isDemo && (
         <div className="sample-plots-box">
-          <span className="sample-plots-title">💡 Chọn nhanh dữ liệu minh họa (Demo cục bộ):</span>
+          <span className="sample-plots-title">
+            <UiIcon name="sparkle" size={16} /> Chọn nhanh dữ liệu minh họa (Demo cục bộ):
+          </span>
           <div className="sample-plots-list">
             {SAMPLE_PLOTS.map((sample) => (
               <button
@@ -296,10 +299,10 @@ export function CreateListingForm() {
                       ))}
                     </select>
                     {activePlot && (
-                      <span className="field-hint">
+                      <span className="field-hint tabular-nums">
                         Vị trí: {activePlot.location}
                         {activePlot.area
-                          ? ` · Diện tích ${Number(activePlot.area).toLocaleString('vi-VN')} m²`
+                          ? ` · Diện tích ${formatArea(Number(activePlot.area))}`
                           : ''}
                       </span>
                     )}
@@ -434,7 +437,7 @@ export function CreateListingForm() {
                       title="Xóa ảnh này"
                       aria-label={`Xóa ảnh ${idx + 1}`}
                     >
-                      ✕
+                      <UiIcon name="close" size={14} />
                     </button>
                   </div>
                 ))}
@@ -461,9 +464,7 @@ export function CreateListingForm() {
                 onClick={() => cameraInputRef.current?.click()}
                 disabled={selectedFiles.length >= MAX_PHOTOS || isSubmitting}
               >
-                <span className="btn-icon" aria-hidden="true">
-                  📸
-                </span>
+                <UiIcon name="camera" size={18} />
                 <span>Chụp ảnh thực tế (Camera)</span>
               </button>
 
@@ -485,9 +486,7 @@ export function CreateListingForm() {
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={selectedFiles.length >= MAX_PHOTOS || isSubmitting}
               >
-                <span className="btn-icon" aria-hidden="true">
-                  🖼️
-                </span>
+                <UiIcon name="plus" size={18} />
                 <span>Chọn từ thư viện máy</span>
               </button>
             </div>
@@ -522,9 +521,7 @@ export function CreateListingForm() {
           </label>
 
           <div className="info-banner">
-            <span className="info-icon" aria-hidden="true">
-              ℹ️
-            </span>
+            <UiIcon name="info" size={18} className="info-icon" />
             <span>
               Theo quy chuẩn hệ thống, bài đăng sau khi tạo sẽ ở trạng thái <strong>OPEN</strong> để
               nhận báo giá từ thương lái. Nông dân có thể chấp nhận nhiều báo giá để cùng trao đổi,

@@ -2,8 +2,9 @@ import { accountStatusLabels, userRoleLabels } from '@agri/contracts';
 import { useAccounts } from '../hooks/useUsers';
 import { useListings } from '../../trading/hooks/useListings';
 import { useOffers } from '../../trading/hooks/useOffers';
-import { formatVND, formatYield } from '../../../shared/utils/formatters';
+import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
 import { UiIcon } from '../../../shared/ui/UiIcon';
+import { getRiceArtwork } from '../../trading/utils/riceArtwork';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { load, selectedPlot, selectedPlotKey } from '../../farming/demo';
@@ -45,13 +46,22 @@ function TraderDashboard({ accountId, demo }: { accountId: string; demo: boolean
           <p>Xem nguồn cung và theo dõi báo giá của bạn.</p>
         </header>
         <section className="dash-card season-hero">
-          <h2>Bảng tin bán lúa</h2>
-          <p>Xem giống lúa, sản lượng dự kiến và vị trí ruộng trước khi gửi báo giá.</p>
-          <div className="season-links">
-            <Link className="season-primary" to="/thi-truong">
-              Tìm nguồn lúa →
-            </Link>
-            <Link to="/bao-gia">Báo giá của tôi</Link>
+          <div className="season-hero-grid">
+            <div>
+              <h2>Bảng tin bán lúa</h2>
+              <p>Xem giống lúa, sản lượng dự kiến và vị trí ruộng trước khi gửi báo giá.</p>
+              <div className="season-links">
+                <Link className="season-primary" to="/thi-truong">
+                  Tìm nguồn lúa →
+                </Link>
+                <Link className="season-secondary" to="/bao-gia">
+                  Báo giá của tôi
+                </Link>
+              </div>
+            </div>
+            <figure className="season-hero-art">
+              <img src={getRiceArtwork('ST25').src} alt="" />
+            </figure>
           </div>
         </section>
         <section className="dash-card">
@@ -69,31 +79,55 @@ function TraderDashboard({ accountId, demo }: { accountId: string; demo: boolean
               <UiIcon name="listings" />
               <div>
                 <Link to={'/bai-dang/' + listing.listingId}>{listing.seedType}</Link>
-                <small>
+                <small className="tabular-nums">
                   {formatYield(listing.estimatedYield)} · {formatVND(listing.expectedPrice)}
                 </small>
               </div>
             </article>
           ))}
         </section>
+        <div className="kpi-grid">
+          <section className="dash-card kpi-card">
+            <small>Nguồn mở hiện tại</small>
+            <strong className="kpi-value">{listings.data?.totalElements ?? 0} bài</strong>
+            <Link className="kpi-pill" to="/thi-truong">
+              → Khám phá thị trường
+            </Link>
+          </section>
+          <section className="dash-card kpi-card">
+            <small>Báo giá đã gửi</small>
+            <strong className="kpi-value">{offers.data?.totalElements ?? 0} báo giá</strong>
+            <Link className="kpi-pill" to="/bao-gia">
+              → Xem báo giá
+            </Link>
+          </section>
+        </div>
       </div>
       <aside className="season-dashboard-aside" aria-label="Hoạt động thu mua">
         <section className="dash-card">
           <h2>Báo giá của tôi</h2>
-          <p>
+          <p className="tabular-nums">
             {offers.data
               ? offers.data.totalElements + ' báo giá đã gửi'
               : offers.isPending
                 ? 'Đang tải báo giá…'
                 : 'Chưa tải được số báo giá.'}
           </p>
-          <Link to="/bao-gia">Xem báo giá →</Link>
+          <Link className="kpi-pill" to="/bao-gia">
+            → Xem báo giá
+          </Link>
         </section>
         <section className="dash-card">
-          <h2>Kết nối</h2>
+          <h2>Kết nối nhanh</h2>
           <div className="season-related">
-            <Link to="/chat">Tin nhắn →</Link>
-            {!demo && <Link to="/payments">Hợp đồng và cọc →</Link>}
+            <Link to="/chat">
+              <UiIcon name="chat" size={18} /> Tin nhắn trao đổi
+            </Link>
+            {!demo && (
+              <Link to="/payments">
+                <UiIcon name="contracts" size={18} /> Hợp đồng và cọc mô phỏng
+              </Link>
+            )}
           </div>
         </section>
       </aside>
@@ -108,7 +142,7 @@ function AdminDashboard({ demo }: { demo: boolean }) {
         <header>
           <p className="dash-kicker">QUẢN TRỊ</p>
           <h1>Tổng quan hệ thống</h1>
-          <p>Theo dõi tài khoản và mở công việc cần xử lý.</p>
+          <p>Theo dõi tài khoản, thông báo và xử lý tranh chấp độc lập.</p>
         </header>
         {demo ? (
           <section className="dash-card">
@@ -122,10 +156,17 @@ function AdminDashboard({ demo }: { demo: boolean }) {
       {!demo && (
         <aside className="season-dashboard-aside" aria-label="Công việc quản trị">
           <section className="dash-card">
-            <h2>Hoạt động</h2>
+            <h2>Hoạt động quản trị</h2>
             <div className="season-related">
-              <Link to="/thong-bao">Thông báo →</Link>
-              <Link to="/payments">Khu vực hợp đồng và tranh chấp →</Link>
+              <Link to="/quan-ly-tai-khoan">
+                <UiIcon name="accounts" size={18} /> Quản lý tài khoản
+              </Link>
+              <Link to="/payments?view=disputes">
+                <UiIcon name="disputes" size={18} /> Hồ sơ tranh chấp
+              </Link>
+              <Link to="/thong-bao">
+                <UiIcon name="notifications" size={18} /> Thông báo hệ thống
+              </Link>
             </div>
           </section>
         </aside>
@@ -199,71 +240,83 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
         </header>
 
         <section className="dash-card season-hero">
-          <p className="season-chip">
-            {season?.status
-              ? (seasonStatusLabels[season.status] ?? season.status)
-              : 'Mùa vụ của bạn'}
-          </p>
-          {plots.isPending ? (
-            <h2>Đang tải thông tin ruộng và mùa vụ…</h2>
-          ) : plots.isError ? (
-            <>
-              <h2>Chưa tải được dữ liệu ruộng lúa</h2>
-              <p>{plots.error.message}</p>
-              <div className="season-links">
-                <button
-                  type="button"
-                  className="season-primary"
-                  onClick={() => void plots.refetch()}
-                >
-                  Thử lại
-                </button>
-              </div>
-            </>
-          ) : !plot ? (
-            <>
-              <h2>Chưa có thửa ruộng nào</h2>
-              <p>Tạo thửa ruộng đầu tiên để bắt đầu theo dõi mùa vụ, nhật ký và đăng bán lúa.</p>
-              <div className="season-links">
-                <Link className="season-primary" to="/ruong-vu">
-                  Thêm thửa ruộng →
-                </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h2>{[season?.seasonName || 'Chưa có mùa vụ', plot.name].join(' · ')}</h2>
-              <p>
-                {[
-                  season?.cropType ? `Giống ${season.cropType}` : null,
-                  plot.area ? `${Number(plot.area).toLocaleString('vi-VN')} m²` : null,
-                  plot.location,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
+          <div className="season-hero-grid">
+            <div>
+              <p className="season-chip">
+                <UiIcon name="rice" size={14} />
+                {season?.status
+                  ? (seasonStatusLabels[season.status] ?? season.status)
+                  : 'Mùa vụ của bạn'}
               </p>
-              <div className="season-links">
-                <Link className="season-primary" to="/ruong-vu">
-                  {season ? 'Quản lý ruộng & mùa vụ →' : 'Tạo mùa vụ mới →'}
-                </Link>
-                {season ? (
-                  <Link
-                    to={
-                      '/bai-dang/tao-moi?' +
-                      new URLSearchParams({
-                        plotId: plot.plotId,
-                        cropSeasonId: season.cropSeasonId,
-                      })
-                    }
-                  >
-                    Đăng bán lúa
-                  </Link>
-                ) : (
-                  <Link to="/nhat-ky">Ghi nhật ký</Link>
-                )}
-              </div>
-            </>
-          )}
+              {plots.isPending ? (
+                <h2>Đang tải thông tin ruộng và mùa vụ…</h2>
+              ) : plots.isError ? (
+                <>
+                  <h2>Chưa tải được dữ liệu ruộng lúa</h2>
+                  <p>{plots.error.message}</p>
+                  <div className="season-links">
+                    <button
+                      type="button"
+                      className="season-primary"
+                      onClick={() => void plots.refetch()}
+                    >
+                      Thử lại
+                    </button>
+                  </div>
+                </>
+              ) : !plot ? (
+                <>
+                  <h2>Chưa có thửa ruộng nào</h2>
+                  <p>
+                    Tạo thửa ruộng đầu tiên để bắt đầu theo dõi mùa vụ, nhật ký và đăng bán lúa.
+                  </p>
+                  <div className="season-links">
+                    <Link className="season-primary" to="/ruong-vu">
+                      Thêm thửa ruộng →
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2>{[season?.seasonName || 'Chưa có mùa vụ', plot.name].join(' · ')}</h2>
+                  <p className="tabular-nums">
+                    {[
+                      season?.cropType ? `Giống ${season.cropType}` : null,
+                      plot.area ? formatArea(Number(plot.area)) : null,
+                      plot.location,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </p>
+                  <div className="season-links">
+                    <Link className="season-primary" to="/ruong-vu">
+                      {season ? 'Quản lý ruộng & mùa vụ →' : 'Tạo mùa vụ mới →'}
+                    </Link>
+                    <Link
+                      className="season-secondary"
+                      to={
+                        season
+                          ? '/bai-dang/tao-moi?' +
+                            new URLSearchParams({
+                              plotId: plot.plotId,
+                              cropSeasonId: season.cropSeasonId,
+                            })
+                          : '/nhat-ky'
+                      }
+                    >
+                      {season ? 'Đăng bán lúa' : 'Ghi nhật ký'}
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+            <figure className="season-hero-art">
+              <img
+                src={getRiceArtwork(season?.cropType || 'ST25').src}
+                alt={getRiceArtwork(season?.cropType || 'ST25').label}
+              />
+            </figure>
+          </div>
         </section>
 
         <section className="dash-card">
@@ -277,6 +330,29 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
             ))}
           </div>
         </section>
+
+        <div className="kpi-grid">
+          <section className="dash-card kpi-card">
+            <small>Đã ghi chi phí mùa vụ</small>
+            <strong className="kpi-value">
+              {report.data ? formatVND(Number(report.data.summary.totalCost || 0)) : '—'}
+            </strong>
+            <Link className="kpi-pill" to="/chi-phi">
+              Xem sổ chi phí →
+            </Link>
+          </section>
+          <section className="dash-card kpi-card">
+            <small>Bài đăng đang mở bán</small>
+            <strong className="kpi-value">
+              {myListings.data
+                ? `${openListingsCount} / ${myListings.data.totalElements} bài`
+                : '—'}
+            </strong>
+            <Link className="kpi-pill" to="/bai-dang">
+              Mở bài đăng →
+            </Link>
+          </section>
+        </div>
 
         <section className="dash-card">
           <h2>Nhật ký canh tác gần đây</h2>
@@ -296,7 +372,7 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
                   <strong>
                     {item.description || workTypeLabels[item.workType] || item.workType}
                   </strong>
-                  <small>
+                  <small className="tabular-nums">
                     {item.workDate} · {workTypeLabels[item.workType] ?? item.workType} ·{' '}
                     {plot?.name}
                   </small>
@@ -359,14 +435,16 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
             <div className="season-stats-row">
               <div>
                 <small>Tổng chi phí</small>
-                <strong>
-                  {Number(report.data.summary.totalCost || 0).toLocaleString('vi-VN')} ₫
+                <strong className="tabular-nums">
+                  {formatVND(Number(report.data.summary.totalCost || 0))}
                 </strong>
               </div>
               {season?.expectedYield != null && (
                 <div>
                   <small>Dự kiến thu</small>
-                  <strong>{formatYield(Number(season.expectedYield))}</strong>
+                  <strong className="tabular-nums">
+                    {formatYield(Number(season.expectedYield))}
+                  </strong>
                 </div>
               )}
             </div>
@@ -379,7 +457,7 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
           {myListings.isPending ? (
             <p role="status">Đang tải bài đăng…</p>
           ) : myListings.data ? (
-            <p>
+            <p className="tabular-nums">
               <strong>{myListings.data.totalElements}</strong> bài đăng ({openListingsCount} đang mở
               nhận báo giá)
             </p>
@@ -387,10 +465,18 @@ function LiveFarmerDashboard({ accountId }: { accountId: string }) {
             <p>Quản lý bài đăng và báo giá từ thương lái.</p>
           )}
           <div className="season-related">
-            <Link to="/bai-dang">Bài đăng bán lúa →</Link>
-            <Link to="/bao-gia">Báo giá đã nhận →</Link>
-            <Link to="/chi-phi">Chi phí canh tác →</Link>
-            <Link to="/payments">Hợp đồng &amp; cọc →</Link>
+            <Link to="/bai-dang">
+              <UiIcon name="listings" size={16} /> Bài đăng bán lúa →
+            </Link>
+            <Link to="/bao-gia">
+              <UiIcon name="offers" size={16} /> Báo giá đã nhận →
+            </Link>
+            <Link to="/chi-phi">
+              <UiIcon name="costs" size={16} /> Chi phí canh tác →
+            </Link>
+            <Link to="/payments">
+              <UiIcon name="contracts" size={16} /> Hợp đồng &amp; cọc →
+            </Link>
           </div>
         </section>
       </aside>
@@ -406,6 +492,10 @@ function DemoFarmerDashboard() {
     .filter((item) => item.plotId === plotId && item.season === plot?.season)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
+  const totalDemoCost = data.costs
+    .filter((item) => item.plotId === plotId && item.season === plot?.season)
+    .reduce((sum, item) => sum + (item.amount ?? 0), 0);
+  const heroArt = getRiceArtwork(plot?.crop || 'ST25');
   return (
     <div className="season-dashboard">
       <div className="season-dashboard-main">
@@ -416,16 +506,31 @@ function DemoFarmerDashboard() {
         </header>
 
         <section className="dash-card season-hero">
-          <p className="season-chip">Mùa vụ minh họa</p>
-          <h2>
-            {plot ? [plot.season || 'Chưa có mùa vụ', plot.name].join(' · ') : 'Ruộng và mùa vụ'}
-          </h2>
-          {plot && <p>{[plot.crop, plot.area].filter(Boolean).join(' · ')}</p>}
-          <div className="season-links">
-            <Link className="season-primary" to="/ruong-vu">
-              Xem mùa vụ →
-            </Link>
-            <Link to="/nhat-ky">Ghi nhật ký</Link>
+          <div className="season-hero-grid">
+            <div>
+              <p className="season-chip">
+                <UiIcon name="rice" size={14} /> Mùa vụ minh họa
+              </p>
+              <h2>
+                {plot
+                  ? [plot.season || 'Chưa có mùa vụ', plot.name].join(' · ')
+                  : 'Ruộng và mùa vụ'}
+              </h2>
+              {plot && (
+                <p className="tabular-nums">{[plot.crop, plot.area].filter(Boolean).join(' · ')}</p>
+              )}
+              <div className="season-links">
+                <Link className="season-primary" to="/ruong-vu">
+                  Xem mùa vụ →
+                </Link>
+                <Link className="season-secondary" to="/nhat-ky">
+                  Ghi nhật ký
+                </Link>
+              </div>
+            </div>
+            <figure className="season-hero-art">
+              <img src={heroArt.src} alt={heroArt.label} />
+            </figure>
           </div>
         </section>
 
@@ -441,6 +546,23 @@ function DemoFarmerDashboard() {
           </div>
         </section>
 
+        <div className="kpi-grid">
+          <section className="dash-card kpi-card">
+            <small>Chi phí minh họa đã ghi</small>
+            <strong className="kpi-value">{formatVND(totalDemoCost)}</strong>
+            <Link className="kpi-pill" to="/chi-phi">
+              Xem chi phí →
+            </Link>
+          </section>
+          <section className="dash-card kpi-card">
+            <small>Hoạt động nhật ký</small>
+            <strong className="kpi-value">{logs.length} mục</strong>
+            <Link className="kpi-pill" to="/nhat-ky">
+              Mở nhật ký →
+            </Link>
+          </section>
+        </div>
+
         <section className="dash-card">
           <h2>Nhật ký canh tác</h2>
           <div className="season-timeline">
@@ -448,7 +570,7 @@ function DemoFarmerDashboard() {
               logs.map((item) => (
                 <article key={item.id}>
                   <strong>{item.detail}</strong>
-                  <small>
+                  <small className="tabular-nums">
                     {item.date} · {plot?.name}
                   </small>
                 </article>
@@ -486,8 +608,12 @@ function DemoFarmerDashboard() {
         <section className="dash-card">
           <h2>Công việc liên quan</h2>
           <div className="season-related">
-            <Link to="/chi-phi">Chi phí canh tác →</Link>
-            <Link to="/bai-dang">Bài đăng bán lúa →</Link>
+            <Link to="/chi-phi">
+              <UiIcon name="costs" size={16} /> Chi phí canh tác →
+            </Link>
+            <Link to="/bai-dang">
+              <UiIcon name="listings" size={16} /> Bài đăng bán lúa →
+            </Link>
           </div>
         </section>
       </aside>

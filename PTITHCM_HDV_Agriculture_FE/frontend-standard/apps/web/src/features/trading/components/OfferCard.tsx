@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { OfferDTO } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatDate, formatVND } from '../../../shared/utils/formatters';
 
 interface OfferCardProps {
@@ -41,7 +42,10 @@ export function OfferCard({
       <div className="offer-card-top">
         <div className="offer-entity-header">
           <span className="offer-type-icon" aria-hidden="true">
-            {isAccepted ? '🤝' : isRejected ? '🚫' : isCancelled ? '↩️' : '🏷️'}
+            <UiIcon
+              name={isAccepted ? 'check' : isRejected ? 'ban' : isCancelled ? 'undo' : 'offers'}
+              size={18}
+            />
           </span>
           <div>
             <h4 className="offer-title">
@@ -94,7 +98,7 @@ export function OfferCard({
       {isAccepted && (
         <div className="offer-accepted-banner">
           <span className="banner-icon" aria-hidden="true">
-            🎉
+            <UiIcon name="sparkle" size={18} />
           </span>
           <span>
             {isFarmerView
@@ -136,7 +140,13 @@ export function OfferCard({
                     disabled={isAccepting || isRejecting}
                     onClick={() => onAccept(offer)}
                   >
-                    {isAccepting ? 'Đang xác nhận…' : '✓ Đồng ý báo giá'}
+                    {isAccepting ? (
+                      'Đang xác nhận…'
+                    ) : (
+                      <>
+                        <UiIcon name="check" size={16} /> Đồng ý báo giá
+                      </>
+                    )}
                   </button>
                 )}
                 {onReject && (
@@ -146,14 +156,20 @@ export function OfferCard({
                     disabled={isAccepting || isRejecting}
                     onClick={() => onReject(offer)}
                   >
-                    {isRejecting ? 'Đang từ chối…' : '✕ Từ chối'}
+                    {isRejecting ? (
+                      'Đang từ chối…'
+                    ) : (
+                      <>
+                        <UiIcon name="close" size={16} /> Từ chối
+                      </>
+                    )}
                   </button>
                 )}
               </>
             )}
             {isAccepted && (
               <Link to={chatUrl} className="offer-btn chat-btn">
-                💬 Mở phòng Chat thương lượng →
+                <UiIcon name="chat" size={16} /> Mở phòng Chat thương lượng →
               </Link>
             )}
             <Link to={`/bai-dang/${offer.listingId}`} className="offer-btn secondary">
@@ -164,13 +180,13 @@ export function OfferCard({
           <>
             {isAccepted && (
               <Link to={chatUrl} className="offer-btn chat-btn">
-                💬 Vào phòng Chat trao đổi ngay →
+                <UiIcon name="chat" size={16} /> Vào phòng Chat trao đổi ngay →
               </Link>
             )}
             {isPending && (
               <>
                 <span className="offer-waiting-text">
-                  ⏳ Đang chờ nông dân phản hồi đề xuất của bạn
+                  <UiIcon name="clock" size={15} /> Đang chờ nông dân phản hồi đề xuất của bạn
                 </span>
                 {onCancel && (
                   <button
@@ -179,14 +195,20 @@ export function OfferCard({
                     disabled={isCancelling}
                     onClick={() => onCancel(offer)}
                   >
-                    {isCancelling ? 'Đang rút lại…' : '↩️ Rút lại báo giá'}
+                    {isCancelling ? (
+                      'Đang rút lại…'
+                    ) : (
+                      <>
+                        <UiIcon name="undo" size={15} /> Rút lại báo giá
+                      </>
+                    )}
                   </button>
                 )}
               </>
             )}
             {(isRejected || isCancelled) && (
               <Link to={`/bai-dang/${offer.listingId}`} className="offer-btn primary reoffer-btn">
-                📝 Trả giá lại cho bài đăng này →
+                <UiIcon name="edit" size={16} /> Trả giá lại cho bài đăng này →
               </Link>
             )}
             <Link to={`/bai-dang/${offer.listingId}`} className="offer-btn secondary">

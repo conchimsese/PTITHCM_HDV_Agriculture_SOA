@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ListingDTO, ListingStatus } from '@agri/contracts';
 import { useSession } from '../../../shared/hooks/useAuth';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { ListingCard } from '../components/ListingCard';
 import { QuickOfferModal } from '../components/QuickOfferModal';
 import { LOCATION_PRESETS, useGeolocation, useListings } from '../hooks/useListings';
@@ -87,7 +88,7 @@ export function MarketplacePage() {
             </label>
             <div className="search-input-wrapper">
               <span className="search-icon" aria-hidden="true">
-                🔍
+                <UiIcon name="search" size={16} />
               </span>
               <input
                 id="search-seed"
@@ -107,7 +108,7 @@ export function MarketplacePage() {
                   }}
                   aria-label="Xóa từ khóa tìm kiếm"
                 >
-                  ✕
+                  <UiIcon name="close" size={14} />
                 </button>
               )}
             </div>
@@ -144,7 +145,7 @@ export function MarketplacePage() {
                 disabled={geoLoading}
                 title="Sử dụng tọa độ GPS của thiết bị để tìm lúa gần bạn nhất"
               >
-                {geoLoading ? '📍 Đang định vị…' : '📍 Vị trí của tôi'}
+                <UiIcon name="pin" size={16} /> {geoLoading ? 'Đang định vị…' : 'Vị trí của tôi'}
               </button>
 
               <select
@@ -168,7 +169,7 @@ export function MarketplacePage() {
         {coords && (
           <div className="location-active-banner">
             <span className="banner-icon" aria-hidden="true">
-              🧭
+              <UiIcon name="compass" size={18} />
             </span>
             <span>
               Đang ưu tiên sản phẩm gần:{' '}
@@ -184,7 +185,9 @@ export function MarketplacePage() {
 
         {geoError && (
           <div className="location-error-banner" role="alert">
-            <span>⚠️ {geoError}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <UiIcon name="disputes" size={16} /> {geoError}
+            </span>
             <span className="error-hint">
               Bạn có thể chọn một trong các khu vực mẫu ở thanh bên trên.
             </span>
@@ -202,7 +205,7 @@ export function MarketplacePage() {
       ) : isError ? (
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không thể tải danh sách sản phẩm</h3>
           <p>{error?.message || 'Có lỗi kết nối máy chủ. Vui lòng thử lại.'}</p>
@@ -213,7 +216,7 @@ export function MarketplacePage() {
       ) : !data || data.items.length === 0 ? (
         <div className="empty-panel">
           <span className="empty-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={28} />
           </span>
           <h3>Không tìm thấy bài đăng nào phù hợp</h3>
           <p>Hãy thử thay đổi từ khóa tìm kiếm hoặc chọn tất cả trạng thái để xem thêm kết quả.</p>

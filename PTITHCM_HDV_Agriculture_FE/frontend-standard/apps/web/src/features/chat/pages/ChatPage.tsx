@@ -6,6 +6,7 @@ import { chatApi } from '../../../shared/api/modules';
 import { useAccount } from '../../../shared/hooks/useAccount';
 import { uploadImage } from '../../../shared/api/media';
 import { PrivateImage } from '../../../shared/ui/PrivateImage';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { DemoChat } from './DemoChat';
 
 export function ChatPage() {
@@ -98,11 +99,15 @@ function ConnectedChat() {
                 key={room.conversationId}
                 to={'/chat/' + room.conversationId}
               >
-                Trao đổi #{formatOfferLabel(room.offerId)}{' '}
-                <small>
-                  {' '}
-                  · {room.contractId ? 'Đã có hợp đồng' : `${room.unreadCount ?? 0} chưa đọc`}
-                </small>
+                <span className="avatar-circle" aria-hidden="true">
+                  {room.offerId.slice(-2).toUpperCase()}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <strong>#{formatOfferLabel(room.offerId)}</strong>
+                  <small className="tabular-nums">
+                    {room.contractId ? 'Đã có hợp đồng' : `${room.unreadCount ?? 0} chưa đọc`}
+                  </small>
+                </span>
               </NavLink>
             ))}
             {rooms.data?.pages[0]?.data.length === 0 && (
@@ -135,6 +140,7 @@ function Room({ id }: { id: string }) {
   const session = useAccount();
   const cache = useQueryClient();
   const [text, setText] = useState('');
+  const [copied, setCopied] = useState(false);
   const send = useMutation({
     mutationFn: () => chatApi.send(id, { messageType: 'TEXT', content: text }),
     onSuccess: () => {
@@ -160,16 +166,34 @@ function Room({ id }: { id: string }) {
     (a, b) =>
       Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.messageId.localeCompare(b.messageId),
   );
+  const isLive = connection === 'Đã kết nối';
+  const isRetrying = connection.includes('Đang') || connection.includes('thử lại');
+  const roomOfferLabel = room.data ? formatOfferLabel(room.data.offerId) : formatOfferLabel(id);
+
   return (
     <>
       <section className="panel messenger-thread">
         <Link className="messenger-back" to="/chat">
-          ← Cuộc trò chuyện
+          <UiIcon name="back" size={16} /> Cuộc trò chuyện
         </Link>
-        <h2>Cuộc trò chuyện</h2>
-        <p className="muted" role="status">
-          {connection}
-        </p>
+        <div className="messenger-thread-header">
+          <div className="messenger-thread-peer">
+            <span className="avatar-circle" aria-hidden="true">
+              {(room.data?.offerId ?? id).slice(-2).toUpperCase()}
+            </span>
+            <div>
+              <h2>Trao đổi #{roomOfferLabel}</h2>
+              <small className="muted tabular-nums">Phòng #{formatOfferLabel(id)}</small>
+            </div>
+          </div>
+          <span className={`connection-pill ${isLive ? 'is-live' : ''}`} role="status">
+            <span
+              className={`status-dot ${isLive ? 'connected' : isRetrying ? 'retrying' : ''}`}
+              aria-hidden="true"
+            />
+            {connection}
+          </span>
+        </div>
         {[history.error, room.error, send.error, image.error, read.error]
           .filter(Boolean)
           .map((e, i) => (
@@ -204,53 +228,47 @@ function Room({ id }: { id: string }) {
                 ) : (
                   m.content
                 )}
-                <small>
-                  <time>{new Date(m.createdAt).toLocaleString('vi-VN')}</time>{' '}
-                  {m.isRead ? '· Đã đọc' : ''}
-                </small>
-                {m.senderId !== session?.accountId && !m.isRead && (
-                  <button disabled={read.isPending} onClick={() => read.mutate(m.messageId)}>
-                    Đánh dấu đã đọc
-                  </button>
-                )}
+                <footer className="bubble-meta">
+                  <small>
+                    <time className="tabular-nums">
+                      {new Date(m.createdAt).toLocaleString('vi-VN')}
+                    </time>
+                    {m.isRead ? ' · Đã đọc' : ''}
+                  </small>
+                  {m.senderId !== session?.accountId && !m.isRead && (
+                    <button
+                      type="button"
+                      className="bubble-read-action"
+                      disabled={read.isPending}
+                      onClick={() => read.mutate(m.messageId)}
+                    >
+                      Đánh dấu đã đọc
+                    </button>
+                  )}
+                </footer>
               </article>
             ))
           )}
         </div>
         {room.data?.status === 'ACTIVE' && (
-          <div style={{ display: 'grid', gap: '10px', marginTop: '12px' }}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (text.trim()) send.mutate();
-              }}
+          <form
+            className="composer-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (text.trim()) send.mutate();
+            }}
+          >
+            <label
+              className="composer-attach-btn"
+              title="Gửi ảnh nông sản hoặc chứng từ (PNG/JPG/WebP)"
             >
-              <label>
-                Tin nhắn
-                <textarea
-                  rows={2}
-                  maxLength={2000}
-                  placeholder="Nhập tin nhắn trao đổi (Enter để gửi, Shift+Enter xuống dòng)…"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (text.trim() && !send.isPending && !image.isPending) send.mutate();
-                    }
-                  }}
-                  required
-                />
-              </label>
-              <button disabled={send.isPending || image.isPending || !text.trim()}>
-                {send.isPending ? 'Đang gửi…' : 'Gửi tin nhắn'}
-              </button>
-            </form>
-            <label>
-              {image.isPending ? 'Đang tải ảnh lên…' : 'Gửi ảnh nông sản / chứng từ'}
+              <UiIcon name="camera" size={18} />
+              <span>{image.isPending ? 'Đang tải…' : 'Ảnh'}</span>
               <input
+                className="visually-hidden"
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
+                aria-label="Gửi ảnh nông sản hoặc chứng từ"
                 disabled={image.isPending || send.isPending}
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -259,18 +277,82 @@ function Room({ id }: { id: string }) {
                 }}
               />
             </label>
-          </div>
+            <label className="composer-input-label">
+              <span className="visually-hidden">Tin nhắn</span>
+              <textarea
+                rows={2}
+                maxLength={2000}
+                placeholder="Nhập tin nhắn trao đổi (Enter để gửi, Shift+Enter xuống dòng)…"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (text.trim() && !send.isPending && !image.isPending) send.mutate();
+                  }
+                }}
+                required
+              />
+            </label>
+            <button
+              type="submit"
+              className="composer-send-btn"
+              disabled={send.isPending || image.isPending || !text.trim()}
+            >
+              <UiIcon name="send" size={16} />
+              {send.isPending ? 'Đang gửi…' : 'Gửi'}
+            </button>
+          </form>
         )}
       </section>
       <aside className="panel messenger-details">
-        <h2>Thông tin trao đổi</h2>
+        <h2>
+          <UiIcon name="document" size={18} /> Thông tin trao đổi
+        </h2>
         {room.data && (
-          <dl style={{ gridTemplateColumns: '1fr', gap: '6px', marginBottom: '14px' }}>
-            <dt>Mã báo giá</dt>
-            <dd>{room.data.offerId}</dd>
-            <dt>Trạng thái phòng</dt>
-            <dd>{room.data.status === 'ACTIVE' ? 'Đang hoạt động' : room.data.status}</dd>
-          </dl>
+          <>
+            <div className="details-peer-card">
+              <span className="avatar-circle lg" aria-hidden="true">
+                {room.data.offerId.slice(-2).toUpperCase()}
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ display: 'block', color: '#164735' }}>
+                  Báo giá #{formatOfferLabel(room.data.offerId)}
+                </strong>
+                <button
+                  type="button"
+                  className="secondary copy-id-btn"
+                  style={{ marginTop: '4px' }}
+                  title={room.data.offerId}
+                  onClick={() => {
+                    void navigator.clipboard?.writeText(room.data!.offerId).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1800);
+                    });
+                  }}
+                >
+                  <UiIcon name={copied ? 'check' : 'copy'} size={13} />
+                  {copied ? 'Đã chép' : 'Sao chép mã'}
+                </button>
+              </div>
+            </div>
+            <div className="details-kv">
+              <div className="details-kv-row">
+                <span>Trạng thái phòng</span>
+                <strong>
+                  {room.data.status === 'ACTIVE' ? 'Đang hoạt động' : room.data.status}
+                </strong>
+              </div>
+              <div className="details-kv-row">
+                <span>Mã phòng</span>
+                <code>#{formatOfferLabel(id)}</code>
+              </div>
+              <div className="details-kv-row">
+                <span>Hợp đồng</span>
+                <strong>{room.data.contractId ? 'Đã khởi tạo' : 'Chưa tạo'}</strong>
+              </div>
+            </div>
+          </>
         )}
         <div className="actions">
           {room.data?.contractId ? (

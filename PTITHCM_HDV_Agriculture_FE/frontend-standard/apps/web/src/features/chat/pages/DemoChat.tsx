@@ -35,8 +35,13 @@ export function DemoChat({ accountId }: { accountId: string }) {
           </h2>
           {rooms.map((item) => (
             <NavLink className="room-link" key={item.id} to={'/chat/' + item.id}>
-              <UiIcon name="plots" /> Lúa {item.crop}
-              <small>Báo giá {item.offer}</small>
+              <span className="avatar-circle" aria-hidden="true">
+                {item.crop.slice(0, 2).toUpperCase()}
+              </span>
+              <span style={{ minWidth: 0 }}>
+                <strong>Lúa {item.crop}</strong>
+                <small>Báo giá {item.offer}</small>
+              </span>
             </NavLink>
           ))}
         </aside>
@@ -49,10 +54,27 @@ export function DemoChat({ accountId }: { accountId: string }) {
             />
             <aside className="panel messenger-details">
               <h2>
-                <UiIcon name="document" /> Thông tin trao đổi
+                <UiIcon name="document" size={18} /> Thông tin trao đổi
               </h2>
-              <p>Giống lúa · {room.crop}</p>
-              <p>Báo giá {room.offer} · Đã chấp nhận</p>
+              <div className="details-peer-card">
+                <span className="avatar-circle lg" aria-hidden="true">
+                  {room.crop.slice(0, 2).toUpperCase()}
+                </span>
+                <div>
+                  <strong style={{ display: 'block', color: '#164735' }}>Lúa {room.crop}</strong>
+                  <small className="muted">Báo giá {room.offer}</small>
+                </div>
+              </div>
+              <div className="details-kv">
+                <div className="details-kv-row">
+                  <span>Giống lúa</span>
+                  <strong>{room.crop}</strong>
+                </div>
+                <div className="details-kv-row">
+                  <span>Trạng thái</span>
+                  <strong>Đã chấp nhận</strong>
+                </div>
+              </div>
             </aside>
           </>
         ) : (
@@ -81,9 +103,23 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
   return (
     <section className="panel messenger-thread">
       <Link className="messenger-back" to="/chat">
-        ← Cuộc trò chuyện
+        <UiIcon name="back" size={16} /> Cuộc trò chuyện
       </Link>
-      <h2>Trao đổi về lúa {room.crop}</h2>
+      <div className="messenger-thread-header">
+        <div className="messenger-thread-peer">
+          <span className="avatar-circle" aria-hidden="true">
+            {room.crop.slice(0, 2).toUpperCase()}
+          </span>
+          <div>
+            <h2>Trao đổi về lúa {room.crop}</h2>
+            <small className="muted">Báo giá {room.offer}</small>
+          </div>
+        </div>
+        <span className="connection-pill is-live">
+          <span className="status-dot connected" aria-hidden="true" />
+          Minh họa cục bộ
+        </span>
+      </div>
       <div className="messages" role="log">
         <article className="bubble">{room.opening}</article>
         <article className="bubble mine">{room.reply}</article>
@@ -95,6 +131,7 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
         ))}
       </div>
       <form
+        className="composer-form"
         onSubmit={(event) => {
           event.preventDefault();
           if (!draft.trim()) return;
@@ -104,16 +141,18 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
           setDraft('');
         }}
       >
-        <label>
-          Tin nhắn
+        <label className="composer-input-label">
+          <span className="visually-hidden">Tin nhắn</span>
           <textarea
             maxLength={2000}
+            rows={2}
+            placeholder="Nhập tin nhắn minh họa…"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
           />
         </label>
-        <button disabled={!draft.trim()}>
-          <UiIcon name="send" /> Gửi tin nhắn
+        <button className="composer-send-btn" disabled={!draft.trim()}>
+          <UiIcon name="send" size={16} /> Gửi
         </button>
       </form>
     </section>

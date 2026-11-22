@@ -1,12 +1,26 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   notificationDate,
-  notificationIcons,
   notificationTypeLabels,
   notificationTypeSchema,
   type NotificationFilters,
 } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { UserError, UserLayout } from '../../users/components/UserLayout';
+
+function notificationCategoryIcon(type: string, referenceType?: string | null): string {
+  if (referenceType === 'CONVERSATION') return 'chat';
+  if (referenceType === 'CONTRACT') return 'contracts';
+  if (referenceType === 'DEPOSIT') return 'deposits';
+  if (referenceType === 'OFFER') return 'offers';
+  if (referenceType === 'ACCOUNT') return 'accounts';
+  if (type.includes('DISPUTE')) return 'disputes';
+  if (type.includes('MESSAGE') || type.includes('CHAT')) return 'chat';
+  if (type.includes('CONTRACT')) return 'contracts';
+  if (type.includes('DEPOSIT')) return 'deposits';
+  if (type.includes('OFFER')) return 'offers';
+  return 'notifications';
+}
 import {
   useMarkRead,
   useNotification,
@@ -52,7 +66,7 @@ export function NotificationsPage() {
             void count.refetch();
           }}
         >
-          ↻ Làm mới
+          <UiIcon name="refresh" size={16} /> Làm mới
         </button>
       </header>
       {count.error && <UserError error={count.error} retry={() => void count.refetch()} />}
@@ -97,7 +111,9 @@ export function NotificationsPage() {
             <UserError error={list.error} retry={() => void list.refetch()} />
           ) : list.data?.items.length === 0 ? (
             <div className="notification-empty">
-              <span aria-hidden="true">♧</span>
+              <span aria-hidden="true">
+                <UiIcon name="notifications" size={32} />
+              </span>
               <h2>Chưa có thông báo</h2>
               <p>Các cập nhật phù hợp với bộ lọc sẽ xuất hiện tại đây.</p>
               <button onClick={() => navigate('/thong-bao')}>Xem tất cả thông báo</button>
@@ -112,7 +128,10 @@ export function NotificationsPage() {
                     className={item.status === 'UNREAD' ? 'is-unread' : ''}
                   >
                     <span className="notification-icon" aria-hidden="true">
-                      {notificationIcons[item.type]}
+                      <UiIcon
+                        name={notificationCategoryIcon(item.type, item.referenceType)}
+                        size={18}
+                      />
                     </span>
                     <div className="notification-preview">
                       <div className="notification-title">
@@ -156,7 +175,9 @@ export function NotificationsPage() {
             />
           ) : (
             <div className="notification-empty">
-              <span aria-hidden="true">✉</span>
+              <span aria-hidden="true">
+                <UiIcon name="notifications" size={32} />
+              </span>
               <h2>Cập nhật dành cho bạn</h2>
               <p>Chọn một thông báo để xem nội dung chi tiết.</p>
             </div>
@@ -184,7 +205,7 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
         item && (
           <article>
             <span className="notification-icon large" aria-hidden="true">
-              {notificationIcons[item.type]}
+              <UiIcon name={notificationCategoryIcon(item.type, item.referenceType)} size={24} />
             </span>
             <p className="user-badge">{notificationTypeLabels[item.type]}</p>
             <h2>{item.title}</h2>
@@ -196,11 +217,18 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
                 disabled={mark.isPending}
                 onClick={() => mark.mutate(id)}
               >
-                {mark.isPending ? 'Đang cập nhật…' : '✓ Đánh dấu đã đọc'}
+                {mark.isPending ? (
+                  'Đang cập nhật…'
+                ) : (
+                  <>
+                    <UiIcon name="check" size={16} /> Đánh dấu đã đọc
+                  </>
+                )}
               </button>
             ) : (
               <p className="user-success">
-                ✓ Đã đọc {item.readAt && notificationDate(item.readAt)}
+                <UiIcon name="check" size={16} /> Đã đọc{' '}
+                {item.readAt && notificationDate(item.readAt)}
               </p>
             )}
             {mark.error && (

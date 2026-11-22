@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { getRiceArtwork } from '../utils/riceArtwork';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useSession } from '../../../shared/hooks/useAuth';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
 import { QuickOfferModal } from '../components/QuickOfferModal';
 import { useListingDetail } from '../hooks/useListingDetail';
@@ -37,7 +38,7 @@ export function ListingDetailPage() {
       <div className="trading-page listing-detail-page">
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không tìm thấy bài đăng</h3>
           <p>{error?.message || 'Bài đăng không tồn tại hoặc đã bị xóa.'}</p>
@@ -99,8 +100,8 @@ export function ListingDetailPage() {
       {/* Just Created Success Alert */}
       {wasJustCreated && (
         <div className="alert alert-success" role="status">
-          ✓ Đăng bài bán lúa thành công! Sản phẩm hiện đã sẵn sàng trên sàn thị trường để thương lái
-          gửi báo giá.
+          <UiIcon name="check" size={16} /> Đăng bài bán lúa thành công! Sản phẩm hiện đã sẵn sàng
+          trên sàn thị trường để thương lái gửi báo giá.
         </div>
       )}
 
@@ -109,7 +110,7 @@ export function ListingDetailPage() {
         <div className="detail-header">
           <div className="detail-title-group">
             <span className="detail-rice-icon" aria-hidden="true">
-              🌾
+              <UiIcon name="rice" size={24} />
             </span>
             <div>
               <h1>{listing.seedType}</h1>
@@ -172,7 +173,7 @@ export function ListingDetailPage() {
                   to={`/bai-dang/${listing.listingId}/bao-gia`}
                   className="primary-button cta-btn"
                 >
-                  🏷️ Xem báo giá đã nhận
+                  <UiIcon name="offers" size={17} /> Xem báo giá đã nhận
                 </Link>
                 <Link to="/bai-dang" className="secondary-button cta-btn">
                   Quản lý bài đăng
@@ -186,13 +187,12 @@ export function ListingDetailPage() {
                     className="primary-button cta-btn"
                     onClick={() => setOfferModalOpen(true)}
                   >
-                    📝 Gửi báo giá thu mua ngay
+                    <UiIcon name="edit" size={17} /> Gửi báo giá thu mua ngay
                   </button>
                 ) : (
                   <button type="button" className="primary-button cta-btn" disabled>
-                    {listing.status === 'LOCKED'
-                      ? '🔒 Đã nhận cọc đặt chỗ'
-                      : '✓ Giao dịch đã hoàn tất'}
+                    <UiIcon name={listing.status === 'LOCKED' ? 'lock' : 'check'} size={17} />{' '}
+                    {listing.status === 'LOCKED' ? 'Đã nhận cọc đặt chỗ' : 'Giao dịch đã hoàn tất'}
                   </button>
                 )}
                 <Link to="/thi-truong" className="secondary-button cta-btn">
@@ -212,7 +212,7 @@ export function ListingDetailPage() {
         <div className="specs-details-grid">
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              🌾
+              <UiIcon name="rice" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Giống lúa canh tác</span>
@@ -222,7 +222,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              ⚖️
+              <UiIcon name="scale" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Sản lượng dự kiến</span>
@@ -232,7 +232,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📐
+              <UiIcon name="area" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Diện tích canh tác</span>
@@ -242,7 +242,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📊
+              <UiIcon name="chart" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Năng suất ước tính</span>
@@ -252,7 +252,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📍
+              <UiIcon name="pin" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Tọa độ GPS ruộng</span>
@@ -264,7 +264,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              👤
+              <UiIcon name="user" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Chủ thửa ruộng (Nông dân)</span>

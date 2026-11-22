@@ -267,6 +267,25 @@ select:focus-visible {
   color: #607267;
   overflow-wrap: anywhere;
 }
+.user-account-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.user-row-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #e1efdf;
+  border: 1px solid #c9dec8;
+  color: #164735;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
 .user-pagination {
   display: flex;
   align-items: center;

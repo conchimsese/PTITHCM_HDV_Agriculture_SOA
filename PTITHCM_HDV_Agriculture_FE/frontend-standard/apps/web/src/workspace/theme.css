@@ -1,9 +1,12 @@
 :root {
   --v5-forest: #164735;
   --v5-green: #246b45;
-  --v5-mist: #f3f6f1;
+  --v5-mist: #f4f7f2;
   --v5-border: #dce6dd;
   --v5-accent: #d8ad47;
+  --v5-bronze: #885b17;
+  --v5-muted: #526459;
+  --v5-shadow-card: 0 1px 2px rgba(22, 71, 53, 0.05), 0 8px 24px rgba(22, 71, 53, 0.06);
   --v5-font: 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif;
 }
 
@@ -13,6 +16,27 @@ body,
 .service-app {
   font-family: var(--v5-font);
   background-color: var(--v5-mist);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.tabular-nums,
+time,
+.nav-unread-pill,
+.price-value,
+.price-cell,
+.price-tag-value,
+.highlight-price,
+.metric-value {
+  font-variant-numeric: tabular-nums;
 }
 
 .web-layout .layout-sidebar {
@@ -28,7 +52,9 @@ body,
 }
 
 .web-layout .nav-item.active {
-  box-shadow: inset 3px 0 var(--v5-accent);
+  border-radius: 10px;
+  background: #e9f3e9;
+  color: var(--v5-forest);
 }
 
 .auth-layout .auth-story {

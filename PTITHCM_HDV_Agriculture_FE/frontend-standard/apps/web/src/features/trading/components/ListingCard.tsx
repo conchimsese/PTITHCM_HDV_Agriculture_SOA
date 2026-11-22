@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ListingDTO } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { getRiceArtwork } from '../utils/riceArtwork';
 import {
   formatArea,
@@ -57,7 +58,7 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
       <div className="card-top">
         <div className="produce-header">
           <span className="rice-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={20} />
           </span>
           <div>
             <h3 className="produce-title">{listing.seedType}</h3>
@@ -76,7 +77,9 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
             onError={() => setImageBroken(true)}
           />
           {listing.images.length > 1 && (
-            <span className="card-photo-count">📷 {listing.images.length} ảnh</span>
+            <span className="card-photo-count">
+              <UiIcon name="camera" size={14} /> {listing.images.length} ảnh
+            </span>
           )}
         </div>
       ) : (

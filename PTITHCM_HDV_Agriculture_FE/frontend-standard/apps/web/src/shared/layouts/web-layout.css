@@ -142,7 +142,7 @@
   background-color: #246b45;
   color: #ffffff;
   font-weight: 600;
-  box-shadow: inset 3px 0 0 #d8ad47;
+  border-radius: 10px;
 }
 
 .nav-icon {
@@ -424,8 +424,9 @@
 
 .workspace-shell {
   min-height: 100dvh;
-  background: #f3f6f1;
+  background: var(--v5-mist, #f4f7f2);
   color: #182820;
+  overflow-x: clip;
 }
 .workspace-top {
   position: sticky;
@@ -576,6 +577,11 @@
   background: #fff;
   border: 1px solid #dce6dd;
   border-radius: 16px;
+  box-shadow: var(
+    --v5-shadow-card,
+    0 1px 2px rgba(22, 71, 53, 0.05),
+    0 8px 24px rgba(22, 71, 53, 0.06)
+  );
 }
 .workspace-menu nav {
   display: grid;

@@ -6,7 +6,46 @@ import type { DisputeDecisionBody } from '@agri/api-client';
 import { paymentsApi } from '../../../shared/api/modules';
 import { useAccount } from '../../../shared/hooks/useAccount';
 import { PrivateImage } from '../../../shared/ui/PrivateImage';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatVND } from '../../../shared/utils/formatters';
+
+function calcSimulatedDeposit5Percent(totalAmount: string): string {
+  const clean = totalAmount.trim();
+  const match = clean.match(/^(\d+)(?:\.(\d{1,2}))?$/);
+  if (!match) return formatVND(0);
+  const whole = BigInt(match[1]);
+  const frac = BigInt((match[2] ?? '00').padEnd(2, '0'));
+  const totalCents = whole * 100n + frac;
+  const depositCents = (totalCents * 5n) / 100n;
+  const depositWhole = depositCents / 100n;
+  return `${depositWhole.toLocaleString('vi-VN')} ₫`;
+}
+
+function depositStatusTone(status: string): string {
+  if (['LOCKED', 'RELEASABLE', 'RELEASED', 'ACTIVE', 'COMPLETED', 'RESOLVED'].includes(status)) {
+    return 'is-success';
+  }
+  if (['FORFEITED', 'CANCELLED'].includes(status)) {
+    return 'is-danger';
+  }
+  return 'is-warning';
+}
+
+const contractStepLabels = [
+  { id: 1, label: 'Tạo hợp đồng' },
+  { id: 2, label: 'Nông dân duyệt' },
+  { id: 3, label: 'Cọc mô phỏng 5%' },
+  { id: 4, label: 'Hoàn tất' },
+];
+
+function getContractStepProgress(status: string): { current: number; cancelled: boolean } {
+  if (status === 'CANCELLED') return { current: 1, cancelled: true };
+  if (status === 'CREATED') return { current: 2, cancelled: false };
+  if (status === 'PENDING_DEPOSIT') return { current: 3, cancelled: false };
+  if (status === 'ACTIVE') return { current: 4, cancelled: false };
+  if (status === 'COMPLETED') return { current: 5, cancelled: false };
+  return { current: 1, cancelled: false };
+}
 
 const contractStatusLabels: Record<string, string> = {
   CREATED: 'Mới tạo · chờ nông dân duyệt',
@@ -63,7 +102,12 @@ const traderViolations: { code: string; points: string; label: string }[] = [
 
 export function PaymentsPage() {
   const session = useAccount();
+  const [searchParams] = useSearchParams();
+  const view = searchParams.get('view') ?? 'contracts';
   const [lookup, setLookup] = useState('');
+  const [lookupKind, setLookupKind] = useState<'contract' | 'dispute'>(
+    view === 'disputes' ? 'dispute' : 'contract',
+  );
   const [adminStatus, setAdminStatus] = useState<string>('');
   const nav = useNavigate();
   const [invalidLookup, setInvalidLookup] = useState(false);
@@ -86,55 +130,28 @@ export function PaymentsPage() {
     enabled: !!session?.tokens && isAdmin,
   });
 
+  const pageTitle = isAdmin
+    ? 'Quản lý tranh chấp & quyết định'
+    : view === 'deposits'
+      ? 'Tiền cọc mô phỏng 5%'
+      : view === 'disputes'
+        ? 'Tranh chấp hợp đồng'
+        : 'Hợp đồng & tiền cọc mô phỏng';
+
   return (
     <>
-      <h1>{isAdmin ? 'Quản lý tranh chấp & quyết định' : 'Hợp đồng và tiền cọc mô phỏng'}</h1>
+      <h1>{pageTitle}</h1>
       <div className="sim-notice" role="note">
-        <strong>Cọc mô phỏng (môi trường thử):</strong>{' '}
-        {isAdmin
-          ? 'Tài khoản quản trị xem xét hồ sơ tranh chấp độc lập và đưa ra quyết định xử lý tiền cọc mô phỏng 5% cùng điểm uy tín.'
-          : 'Khoản cọc 5% trong ứng dụng chỉ mang tính mô phỏng phục vụ môi trường thử nghiệm. Tiền mua lúa thanh toán trực tiếp ngoài ứng dụng.'}
+        <UiIcon name="info" size={18} />
+        <div>
+          <strong>Cọc mô phỏng (môi trường thử):</strong>{' '}
+          {isAdmin
+            ? 'Tài khoản quản trị xem xét hồ sơ tranh chấp độc lập và đưa ra quyết định xử lý tiền cọc mô phỏng 5% cùng điểm uy tín.'
+            : view === 'disputes'
+              ? 'Mở hoặc theo dõi hồ sơ tranh chấp từ chi tiết hợp đồng bên dưới. Tiền cọc 5% trên ứng dụng chỉ phục vụ môi trường thử nghiệm.'
+              : 'Khoản cọc 5% trong ứng dụng chỉ mang tính mô phỏng phục vụ môi trường thử nghiệm. Tiền mua lúa thanh toán trực tiếp ngoài ứng dụng.'}
+        </div>
       </div>
-
-      <section className="panel">
-        <h2>{isAdmin ? 'Mở nhanh theo mã tranh chấp' : 'Tra cứu nhanh theo mã hợp đồng'}</h2>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const id = lookup.trim();
-            if (!z.uuid().safeParse(id).success) {
-              setInvalidLookup(true);
-              return;
-            }
-            void nav((isAdmin ? '/payments/disputes/' : '/payments/contracts/') + id);
-          }}
-        >
-          <label>
-            {isAdmin ? 'Mã tranh chấp (UUID)' : 'Mã hợp đồng (UUID)'}
-            <input
-              value={lookup}
-              placeholder="Ví dụ: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-              onChange={(e) => {
-                setLookup(e.target.value);
-                setInvalidLookup(false);
-              }}
-              required
-              aria-invalid={invalidLookup}
-              aria-describedby={invalidLookup ? 'payment-lookup-error' : undefined}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
-          {invalidLookup && (
-            <p id="payment-lookup-error" className="error" role="alert">
-              Mã chưa đúng định dạng UUID. Kiểm tra mã rồi thử lại.
-            </p>
-          )}
-          <button style={{ marginTop: '10px' }}>
-            {isAdmin ? 'Mở hồ sơ tranh chấp' : 'Mở hợp đồng'}
-          </button>
-        </form>
-      </section>
 
       {isAdmin ? (
         <section className="panel">
@@ -192,16 +209,18 @@ export function PaymentsPage() {
           {adminDisputes.data?.pages
             .flatMap((p) => p.items)
             .map((item) => (
-              <article className="room-link" key={item.disputeId}>
+              <article className="room-link" key={item.disputeId} style={{ display: 'block' }}>
                 <div className="actions" style={{ justifyContent: 'space-between' }}>
                   <Link to={'/payments/disputes/' + item.disputeId}>
-                    Hồ sơ {item.disputeId.slice(0, 8)} · {item.reasonCode}
+                    Hồ sơ #{item.disputeId.slice(0, 8)} · {item.reasonCode}
                   </Link>
-                  <span>{disputeStatusLabels[item.status] ?? item.status}</span>
+                  <span className={`status-pill ${depositStatusTone(item.status)}`}>
+                    {disputeStatusLabels[item.status] ?? item.status}
+                  </span>
                 </div>
                 <p style={{ margin: '6px 0' }}>{item.description}</p>
-                <small className="muted">
-                  Hợp đồng {item.contractId.slice(0, 8)} ·{' '}
+                <small className="muted tabular-nums">
+                  Hợp đồng #{item.contractId.slice(0, 8)} ·{' '}
                   {item.depositHold ? 'Đang giữ cọc mô phỏng' : 'Không giữ cọc'}
                   {item.outcome ? ` · Kết quả: ${item.outcome}` : ''}
                 </small>
@@ -219,8 +238,25 @@ export function PaymentsPage() {
         </section>
       ) : (
         <section className="panel">
-          <h2>Lịch sử cọc mô phỏng (môi trường thử)</h2>
-          {deposits.isPending && <p role="status">Đang tải danh sách cọc…</p>}
+          <div
+            className="actions"
+            style={{ justifyContent: 'space-between', marginBottom: '12px' }}
+          >
+            <h2 style={{ margin: 0 }}>
+              {view === 'disputes'
+                ? 'Chọn hợp đồng để xem hoặc mở tranh chấp'
+                : 'Lịch sử hợp đồng & cọc mô phỏng (môi trường thử)'}
+            </h2>
+            <button
+              type="button"
+              className="secondary"
+              disabled={deposits.isFetching}
+              onClick={() => void deposits.refetch()}
+            >
+              Làm mới
+            </button>
+          </div>
+          {deposits.isPending && <p role="status">Đang tải danh sách hợp đồng &amp; cọc…</p>}
           {deposits.error && (
             <div className="error" role="alert">
               <p style={{ margin: '0 0 8px' }}>{deposits.error.message}</p>
@@ -238,16 +274,23 @@ export function PaymentsPage() {
           {deposits.data?.pages
             .flatMap((p) => p.data)
             .map((d) => (
-              <article className="room-link" key={d.paymentTrackingId}>
+              <article className="room-link" key={d.paymentTrackingId} style={{ display: 'block' }}>
                 <div className="actions" style={{ justifyContent: 'space-between' }}>
                   <Link to={'/payments/contracts/' + d.contractId}>
-                    Hợp đồng {d.contractId.slice(0, 8)}
+                    Hợp đồng #{d.contractId.slice(0, 8)} →
                   </Link>
-                  <strong>{formatVND(d.depositAmount)} (cọc mô phỏng)</strong>
+                  <strong className="tabular-nums">
+                    {formatVND(d.depositAmount)} (cọc mô phỏng)
+                  </strong>
                 </div>
-                <p className="muted" style={{ margin: '6px 0 0' }}>
-                  {depositStatusLabels[d.status] ?? d.status}
-                </p>
+                <div
+                  className="actions"
+                  style={{ justifyContent: 'space-between', marginTop: '8px' }}
+                >
+                  <span className={`status-pill ${depositStatusTone(d.status)}`}>
+                    {depositStatusLabels[d.status] ?? d.status}
+                  </span>
+                </div>
               </article>
             ))}
           {deposits.hasNextPage && (
@@ -261,6 +304,69 @@ export function PaymentsPage() {
           )}
         </section>
       )}
+
+      <details className="lookup-details" open={invalidLookup || undefined}>
+        <summary className="lookup-summary">
+          <span className="lookup-summary-left">
+            <UiIcon name="search" size={16} />
+            {isAdmin
+              ? 'Mở nhanh theo mã hồ sơ tranh chấp (UUID)'
+              : 'Tra cứu nhanh theo mã hợp đồng hoặc tranh chấp (UUID)'}
+          </span>
+          <UiIcon name="chevron" size={16} />
+        </summary>
+        <form
+          className="lookup-inline-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const id = lookup.trim();
+            if (!z.uuid().safeParse(id).success) {
+              setInvalidLookup(true);
+              return;
+            }
+            const target =
+              isAdmin || lookupKind === 'dispute' ? '/payments/disputes/' : '/payments/contracts/';
+            void nav(target + id);
+          }}
+        >
+          {!isAdmin && view === 'disputes' && (
+            <label style={{ flex: '0 0 180px' }}>
+              Loại hồ sơ
+              <select
+                value={lookupKind}
+                onChange={(e) => setLookupKind(e.target.value as 'contract' | 'dispute')}
+              >
+                <option value="dispute">Tranh chấp</option>
+                <option value="contract">Hợp đồng</option>
+              </select>
+            </label>
+          )}
+          <label>
+            {isAdmin || (!isAdmin && lookupKind === 'dispute')
+              ? 'Mã tranh chấp (UUID)'
+              : 'Mã hợp đồng (UUID)'}
+            <input
+              value={lookup}
+              placeholder="Ví dụ: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+              onChange={(e) => {
+                setLookup(e.target.value);
+                setInvalidLookup(false);
+              }}
+              required
+              aria-invalid={invalidLookup}
+              aria-describedby={invalidLookup ? 'payment-lookup-error' : undefined}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </label>
+          <button type="submit">Mở hồ sơ</button>
+        </form>
+        {invalidLookup && (
+          <p id="payment-lookup-error" className="error" role="alert" style={{ marginTop: '10px' }}>
+            Mã chưa đúng định dạng UUID. Kiểm tra mã rồi thử lại.
+          </p>
+        )}
+      </details>
     </>
   );
 }
@@ -313,6 +419,7 @@ export function ContractPage() {
   const c = contract.data;
   const farmer = session?.role === 'FARMER' && session.accountId === c.farmerId;
   const trader = session?.role === 'TRADER' && session.accountId === c.traderId;
+  const stepProgress = getContractStepProgress(c.status);
 
   return (
     <>
@@ -320,20 +427,77 @@ export function ContractPage() {
         <Link to="/payments">← Danh sách hợp đồng &amp; cọc</Link>
       </div>
       <section className="panel">
-        <h1>Hợp đồng mùa vụ</h1>
-        <p className="muted">Mã hợp đồng: {c.contractId}</p>
+        <div
+          className="actions"
+          style={{ justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}
+        >
+          <div>
+            <h1 style={{ marginBottom: '4px' }}>Hợp đồng mùa vụ</h1>
+            <p className="muted tabular-nums" style={{ margin: 0 }}>
+              Mã hợp đồng: #{c.contractId.slice(0, 8)}…{c.contractId.slice(-4)}
+            </p>
+          </div>
+          <span className={`status-pill ${depositStatusTone(c.status)}`}>
+            {contractStatusLabels[c.status] ?? c.status}
+          </span>
+        </div>
+
+        <ol className="contract-stepper" aria-label="Tiến độ hợp đồng">
+          {contractStepLabels.map((step) => {
+            const done = !stepProgress.cancelled && step.id < stepProgress.current;
+            const current = !stepProgress.cancelled && step.id === stepProgress.current;
+            return (
+              <li
+                key={step.id}
+                className={`contract-step ${
+                  stepProgress.cancelled
+                    ? 'is-cancelled'
+                    : done
+                      ? 'is-done'
+                      : current
+                        ? 'is-current'
+                        : ''
+                }`}
+              >
+                <span className="step-badge" aria-hidden="true">
+                  {done ? <UiIcon name="check" size={13} /> : step.id}
+                </span>
+                <span>{step.label}</span>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="contract-kpi-grid">
+          <div className="contract-kpi-card">
+            <small>Tổng giá trị hợp đồng</small>
+            <strong>{formatVND(c.totalAmount)}</strong>
+          </div>
+          <div className="contract-kpi-card">
+            <small>Cọc mô phỏng 5% (môi trường thử)</small>
+            <strong>{calcSimulatedDeposit5Percent(c.totalAmount)}</strong>
+          </div>
+          <div className="contract-kpi-card">
+            <small>Ngày giao dự kiến</small>
+            <strong>{new Date(c.deliveryDate).toLocaleDateString('vi-VN')}</strong>
+          </div>
+        </div>
+
         <div className="sim-notice" role="note">
-          <strong>Cọc mô phỏng (môi trường thử):</strong> Tiền cọc 5% trên tổng giá trị hợp đồng
-          được hệ thống tính mô phỏng; giao dịch thanh toán tiền mua lúa thực tế diễn ra ngoài ứng
-          dụng.
+          <UiIcon name="info" size={18} />
+          <div>
+            <strong>Cọc mô phỏng (môi trường thử):</strong> Tiền cọc 5% trên tổng giá trị hợp đồng
+            được hệ thống tính mô phỏng; giao dịch thanh toán tiền mua lúa thực tế diễn ra ngoài ứng
+            dụng.
+          </div>
         </div>
         <dl>
           <dt>Trạng thái</dt>
           <dd>{contractStatusLabels[c.status] ?? c.status}</dd>
           <dt>Tổng giá trị</dt>
-          <dd>{formatVND(c.totalAmount)}</dd>
+          <dd className="tabular-nums">{formatVND(c.totalAmount)}</dd>
           <dt>Ngày giao dự kiến</dt>
-          <dd>{new Date(c.deliveryDate).toLocaleString('vi-VN')}</dd>
+          <dd className="tabular-nums">{new Date(c.deliveryDate).toLocaleString('vi-VN')}</dd>
           <dt>Điều khoản</dt>
           <dd style={{ whiteSpace: 'pre-wrap' }}>{c.terms}</dd>
         </dl>
@@ -466,8 +630,11 @@ export function CreateContractPage() {
       <h1>Soạn hợp đồng mùa vụ</h1>
       <p className="muted">Đọc và thống nhất điều khoản với nông dân trước khi gửi dự thảo.</p>
       <div className="sim-notice" role="note">
-        <strong>Cọc mô phỏng (môi trường thử):</strong> Sau khi nông dân chấp nhận hợp đồng, thương
-        lái thực hiện bước nạp cọc mô phỏng 5% để kích hoạt hợp đồng thử nghiệm.
+        <UiIcon name="info" size={18} />
+        <div>
+          <strong>Cọc mô phỏng (môi trường thử):</strong> Sau khi nông dân chấp nhận hợp đồng,
+          thương lái thực hiện bước nạp cọc mô phỏng 5% để kích hoạt hợp đồng thử nghiệm.
+        </div>
       </div>
       <ContractForm
         onSave={async (values) => {
@@ -692,12 +859,20 @@ export function DisputePage() {
       </div>
 
       <section className="panel">
-        <h1>Hồ sơ tranh chấp</h1>
+        <div
+          className="actions"
+          style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}
+        >
+          <h1 style={{ margin: 0 }}>Hồ sơ tranh chấp</h1>
+          <span className={`status-pill ${depositStatusTone(d.status)}`}>
+            {disputeStatusLabels[d.status] ?? d.status}
+          </span>
+        </div>
         <dl>
           <dt>Mã tranh chấp</dt>
-          <dd>{d.disputeId}</dd>
+          <dd className="tabular-nums">{d.disputeId}</dd>
           <dt>Mã hợp đồng</dt>
-          <dd>{d.contractId}</dd>
+          <dd className="tabular-nums">{d.contractId}</dd>
           <dt>Trạng thái</dt>
           <dd>{disputeStatusLabels[d.status] ?? d.status}</dd>
           <dt>Lý do</dt>
@@ -762,9 +937,15 @@ export function DisputePage() {
 
         {d.status !== 'RESOLVED' && !isAdmin && (
           <div style={{ display: 'grid', gap: '16px', marginTop: '16px' }}>
-            <label>
-              {upload.isPending ? 'Đang tải ảnh bằng chứng…' : 'Nộp ảnh bằng chứng (PNG/JPG/WebP)'}
+            <label className="file-upload-btn">
+              <UiIcon name="camera" size={18} />
+              <span>
+                {upload.isPending
+                  ? 'Đang tải ảnh bằng chứng…'
+                  : 'Nộp ảnh bằng chứng (PNG/JPG/WebP)'}
+              </span>
               <input
+                className="visually-hidden"
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 disabled={upload.isPending}

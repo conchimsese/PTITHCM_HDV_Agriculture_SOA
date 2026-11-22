@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import type { CreateOfferRequest, ListingDTO, OfferDTO } from '@agri/contracts';
 import { tradingApi } from '../../../shared/api/runtime';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
 
 interface QuickOfferModalProps {
@@ -116,13 +117,13 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
           onClick={handleClose}
           aria-label="Đóng hộp thoại"
         >
-          ✕
+          <UiIcon name="close" size={18} />
         </button>
 
         {createdOffer ? (
           <div className="offer-success-view">
             <span className="success-icon" aria-hidden="true">
-              🎉
+              <UiIcon name="check" size={28} />
             </span>
             <h3 id="modal-title">Gửi báo giá thành công!</h3>
             <p className="success-message">
@@ -158,7 +159,7 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
           <form onSubmit={handleSubmit} className="offer-form">
             <div className="modal-header">
               <span className="modal-leaf" aria-hidden="true">
-                🌾
+                <UiIcon name="rice" size={22} />
               </span>
               <div>
                 <h3 id="modal-title">Gửi báo giá thu mua lúa</h3>
@@ -242,9 +243,12 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
             </div>
 
             <p className="form-note">
-              ℹ️ Báo giá bắt đầu ở trạng thái <strong>PENDING</strong> không cần nạp tiền cọc trước.
-              Nếu nông dân đồng ý, hệ thống mở phòng Chat để hai bên trao đổi chi tiết. Bạn có thể
-              hủy đề xuất bất cứ lúc nào khi còn đang chờ duyệt.
+              <UiIcon name="info" size={16} />{' '}
+              <span>
+                Báo giá bắt đầu ở trạng thái <strong>PENDING</strong> không cần nạp tiền cọc trước.
+                Nếu nông dân đồng ý, hệ thống mở phòng Chat để hai bên trao đổi chi tiết. Bạn có thể
+                hủy đề xuất bất cứ lúc nào khi còn đang chờ duyệt.
+              </span>
             </p>
 
             <div className="modal-actions">

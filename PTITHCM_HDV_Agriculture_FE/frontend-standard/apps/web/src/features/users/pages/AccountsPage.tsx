@@ -98,8 +98,15 @@ export function AccountsPage() {
                 {list.data?.items.map((account) => (
                   <tr key={account.accountId}>
                     <td data-label="Tài khoản">
-                      <strong>{account.username}</strong>
-                      <small>{account.email}</small>
+                      <div className="user-account-cell">
+                        <span className="user-row-avatar" aria-hidden="true">
+                          {account.username.slice(0, 2).toUpperCase()}
+                        </span>
+                        <div>
+                          <strong>{account.username}</strong>
+                          <small>{account.email}</small>
+                        </div>
+                      </div>
                     </td>
                     <td data-label="Vai trò">{userRoleLabels[account.role]}</td>
                     <td data-label="Trạng thái">

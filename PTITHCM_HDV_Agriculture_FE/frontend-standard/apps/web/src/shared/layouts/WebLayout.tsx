@@ -1,6 +1,6 @@
 import { UiIcon } from '../ui/UiIcon';
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { modulesForRole, roleLabels } from '@agri/contracts';
 import { useLogout, useSession } from '../hooks/useAuth';
 import { useUnreadCount } from '../../features/notifications/hooks/useNotifications';
@@ -16,12 +16,47 @@ const modulePathMap: Record<string, string> = {
   costs: '/chi-phi',
   chat: '/chat',
   contracts: '/payments',
-  deposits: '/payments',
-  disputes: '/payments',
+  deposits: '/payments?view=deposits',
+  disputes: '/payments?view=disputes',
   notifications: '/thong-bao',
   profile: '/tai-khoan',
   accounts: '/quan-ly-tai-khoan',
 };
+
+function isModuleActive(id: string, role: string, pathname: string, search: string): boolean {
+  if (id === 'dashboard') return pathname === '/';
+  if (id === 'marketplace') {
+    if (pathname.startsWith('/thi-truong')) return true;
+    return (
+      role === 'TRADER' &&
+      pathname.startsWith('/bai-dang/') &&
+      !pathname.startsWith('/bai-dang/tao-moi') &&
+      !pathname.endsWith('/bao-gia')
+    );
+  }
+  if (id === 'listings') return pathname.startsWith('/bai-dang') && !pathname.endsWith('/bao-gia');
+  if (id === 'offers') return pathname.startsWith('/bao-gia') || pathname.endsWith('/bao-gia');
+  if (id === 'plots') return pathname.startsWith('/ruong-vu');
+  if (id === 'journal') return pathname.startsWith('/nhat-ky');
+  if (id === 'costs') return pathname.startsWith('/chi-phi');
+  if (id === 'chat') return pathname.startsWith('/chat');
+  if (id === 'notifications') return pathname.startsWith('/thong-bao');
+  if (id === 'profile')
+    return pathname.startsWith('/tai-khoan') || pathname.startsWith('/nguoi-dung');
+  if (id === 'accounts') return pathname.startsWith('/quan-ly-tai-khoan');
+  if (id === 'contracts' || id === 'deposits' || id === 'disputes') {
+    if (!pathname.startsWith('/payments')) return false;
+    if (pathname.startsWith('/payments/disputes/')) return id === 'disputes';
+    if (pathname.startsWith('/payments/contracts/') || pathname === '/payments/new') {
+      return id === 'contracts';
+    }
+    const view = new URLSearchParams(search).get('view');
+    if (view === 'deposits') return id === 'deposits';
+    if (view === 'disputes') return id === 'disputes';
+    return role === 'ADMIN' ? id === 'disputes' : id === 'contracts';
+  }
+  return false;
+}
 
 const primaryByRole = {
   FARMER: ['dashboard', 'plots', 'listings', 'chat', 'profile'],
@@ -46,12 +81,12 @@ export function WebLayout() {
   const session = useSession();
   const logout = useLogout();
   const unread = useUnreadCount();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setMenuOpen(false);
-  }, [pathname]);
+  }, [pathname, search]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -74,17 +109,25 @@ export function WebLayout() {
   });
   const primary = primaryByRole[role].filter((id) => modules.some((item) => item.id === id));
 
-  const primaryLinks = primary.map((id) => (
-    <NavLink key={id} to={modulePathMap[id]} end={id === 'dashboard'}>
-      <UiIcon name={id} />
-      <span>{primaryLabels[id]}</span>
-      {id === 'notifications' && unreadCount > 0 && (
-        <span className="nav-unread-pill" aria-label={`${unreadCount} thông báo chưa đọc`}>
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      )}
-    </NavLink>
-  ));
+  const primaryLinks = primary.map((id) => {
+    const active = isModuleActive(id, role, pathname, search);
+    return (
+      <Link
+        key={id}
+        to={modulePathMap[id]}
+        aria-current={active ? 'page' : undefined}
+        className={active ? 'active' : undefined}
+      >
+        <UiIcon name={id} />
+        <span>{primaryLabels[id]}</span>
+        {id === 'notifications' && unreadCount > 0 && (
+          <span className="nav-unread-pill" aria-label={`${unreadCount} thông báo chưa đọc`}>
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </Link>
+    );
+  });
 
   return (
     <div className="workspace-shell">
@@ -94,7 +137,9 @@ export function WebLayout() {
       <header className="workspace-top">
         <div className="workspace-top-inner">
           <Link className="workspace-brand" to="/">
-            <span aria-hidden="true">❧</span>
+            <span className="brand-leaf" aria-hidden="true">
+              <UiIcon name="rice" size={22} />
+            </span>
             <div>
               <strong>Ruộng Lúa Việt</strong>
               <small>Gắn mùa vụ · Nối giao thương</small>
@@ -144,20 +189,26 @@ export function WebLayout() {
         <aside id="workspace-menu" className={menuOpen ? 'workspace-menu open' : 'workspace-menu'}>
           <nav aria-label="Khu vực làm việc">
             <h2>Khu vực làm việc</h2>
-            {modules.map(({ id, label }) => (
-              <NavLink
-                key={id}
-                to={modulePathMap[id]}
-                end={id === 'dashboard'}
-                onClick={() => setMenuOpen(false)}
-              >
-                <UiIcon name={id} />
-                <span>{label}</span>
-                {id === 'notifications' && unreadCount > 0 && (
-                  <span className="nav-unread-pill">{unreadCount > 99 ? '99+' : unreadCount}</span>
-                )}
-              </NavLink>
-            ))}
+            {modules.map(({ id, label }) => {
+              const active = isModuleActive(id, role, pathname, search);
+              return (
+                <Link
+                  key={id}
+                  to={modulePathMap[id]}
+                  aria-current={active ? 'page' : undefined}
+                  className={active ? 'active' : undefined}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <UiIcon name={id} />
+                  <span>{label}</span>
+                  {id === 'notifications' && unreadCount > 0 && (
+                    <span className="nav-unread-pill">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
           <button type="button" onClick={() => void logout()}>
             Đăng xuất

@@ -53,8 +53,12 @@
   background: white;
   border: 1px solid #dce6dd;
   border-radius: 18px;
-  padding: 26px;
-  box-shadow: 0 8px 24px #1647350a;
+  padding: 24px;
+  box-shadow: var(
+    --v5-shadow-card,
+    0 1px 2px rgba(22, 71, 53, 0.05),
+    0 8px 24px rgba(22, 71, 53, 0.06)
+  );
 }
 .dash-card h2 {
   font-size: 23px;
@@ -173,15 +177,43 @@
 }
 
 .season-hero {
-  background: linear-gradient(105deg, #f3f8ed 50%, #e5f0da 100%);
+  background: linear-gradient(108deg, #edf5ea 42%, #f5f8ea 75%, #fbf3dc 100%);
+  border-color: #d3e5d1;
+}
+
+.season-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 156px;
+  gap: 20px;
+  align-items: center;
+}
+
+.season-hero-art {
+  margin: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #cfe1cd;
+  background: #fff;
+  aspect-ratio: 1 / 1;
+}
+
+.season-hero-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .season-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   width: fit-content;
   padding: 4px 10px;
   border-radius: 999px;
   background: #e1efdf;
-  font-size: 13px;
+  color: #164735;
+  font-size: 12.5px;
   font-weight: 650;
 }
 
@@ -190,7 +222,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   margin-top: 14px;
 }
 
@@ -198,8 +230,109 @@
   background: #246b45;
   color: white;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 0 16px;
+  font-weight: 600;
   text-decoration: none;
+  gap: 6px;
+}
+
+.season-links .season-primary:hover {
+  background: #164735;
+}
+
+.season-links .season-secondary {
+  background: #fff;
+  border: 1px solid #c9d8cd;
+  border-radius: 10px;
+  color: #164735;
+  font-weight: 600;
+  padding: 0 16px;
+  text-decoration: none;
+  gap: 6px;
+}
+
+.season-links .season-secondary:hover {
+  background: #edf5ed;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kpi-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.kpi-card small {
+  font-size: 13px;
+  font-weight: 600;
+  color: #526459;
+}
+
+.kpi-value {
+  font-size: clamp(22px, 2.5vw, 26px);
+  font-weight: 800;
+  color: #164735;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+
+.kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #dce6dd;
+  border-radius: 999px;
+  background: #f8faf7;
+  color: #164735;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 4px;
+}
+
+.kpi-pill:hover {
+  background: #edf5ed;
+  border-color: #b9cbbd;
+}
+
+.season-related a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e7efe8;
+  border-radius: 12px;
+  background: #f9fbf9;
+  color: #164735;
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.season-related a:hover {
+  background: #edf5ed;
+  border-color: #c9d8cd;
+}
+
+@media (max-width: 600px) {
+  .season-hero-grid,
+  .kpi-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .season-hero-art {
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+  }
 }
 
 .season-actions a {

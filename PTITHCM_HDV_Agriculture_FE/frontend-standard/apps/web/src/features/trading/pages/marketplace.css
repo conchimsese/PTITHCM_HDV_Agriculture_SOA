@@ -232,7 +232,10 @@
 }
 
 .rice-icon {
-  font-size: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #246b45;
   line-height: 1;
 }
 
@@ -297,6 +300,9 @@
   position: absolute;
   bottom: 8px;
   right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   background: rgba(22, 71, 53, 0.85);
   color: #ffffff;
   font-size: 11px;
