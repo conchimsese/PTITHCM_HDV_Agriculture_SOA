@@ -71,13 +71,9 @@ $pem = (Get-Content -Raw user-service/secrets/local-auth/public.pem).Trim() -rep
 Write-Output "JWT_PUBLIC_KEYS_JSON={`"local-2026-10-18`":`"$pem\n`"}"
 ```
 
-### 3.3. Tạo `package-lock.json` cho `trading-service-soa`
+### 3.3. Kiểm tra phiên bản Node
 
-Vì `trading-service-soa/Dockerfile` dùng `npm ci` nhưng `package-lock.json` nằm trong `.gitignore`, chạy lệnh sau trước khi build Docker:
-
-```powershell
-npm --prefix trading-service-soa install --package-lock-only
-```
+Dùng Node.js 24 để khớp môi trường CI. Trading Service dùng lockfile trong repo khi Docker cài dependencies.
 
 ### 3.4. Tạo các file `.env`
 

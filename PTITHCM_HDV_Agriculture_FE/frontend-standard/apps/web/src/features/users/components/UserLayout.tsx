@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, NavLink } from 'react-router-dom';
 import { useState } from 'react';
 import { logoutUser, useSession } from '../hooks/useUsers';
 import { useUnreadCount } from '../../notifications/hooks/useNotifications';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import '../pages/users.css';
 export function UserLayout({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const session = useSession();
@@ -12,16 +13,26 @@ export function UserLayout({ children, admin = false }: { children: ReactNode; a
   return (
     <div className="user-shell">
       <aside className="user-sidebar">
-        <Link className="user-brand" to="/tai-khoan">
-          ❧ Ruộng Lúa Việt
+        <Link className="user-brand" to="/">
+          <UiIcon name="plots" /> Ruộng Lúa Việt
         </Link>
-        <p>KẾT NỐI CÙNG PHÁT TRIỂN</p>
-        <nav>
-          <Link to="/tai-khoan">◉ Hồ sơ cá nhân</Link>
-          <Link to="/thong-bao">
-            ♧ Thông báo {unread.data && <span>({unread.data.count})</span>}
-          </Link>
-          {session.role === 'ADMIN' && <Link to="/quan-ly-tai-khoan">▦ Quản lý tài khoản</Link>}
+
+        <nav aria-label="Tài khoản và thông báo">
+          <NavLink to="/" end>
+            <UiIcon name="dashboard" /> Trang chủ
+          </NavLink>
+          <NavLink to="/tai-khoan">
+            <UiIcon name="profile" /> Hồ sơ cá nhân
+          </NavLink>
+          <NavLink to="/thong-bao">
+            <UiIcon name="notifications" /> Thông báo{' '}
+            {unread.data && <span>({unread.data.count})</span>}
+          </NavLink>
+          {session.role === 'ADMIN' && (
+            <NavLink to="/quan-ly-tai-khoan">
+              <UiIcon name="accounts" /> Quản lý tài khoản
+            </NavLink>
+          )}
         </nav>
         <button
           disabled={busy}

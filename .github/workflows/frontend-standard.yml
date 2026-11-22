@@ -25,4 +25,3 @@ jobs:
       - run: npm run export:android
         env:
           CI: '1'
-

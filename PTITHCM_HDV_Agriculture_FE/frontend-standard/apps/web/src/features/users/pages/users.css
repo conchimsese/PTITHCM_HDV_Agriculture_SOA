@@ -354,3 +354,34 @@ select:focus-visible {
     flex-wrap: wrap;
   }
 }
+
+.user-sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+}
+
+.user-sidebar nav a.active,
+.user-sidebar nav a:hover {
+  background: #ffffff28;
+}
+
+.user-sidebar .user-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .user-sidebar nav {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 0;
+  }
+
+  .user-sidebar nav a {
+    padding: 8px 10px;
+  }
+}

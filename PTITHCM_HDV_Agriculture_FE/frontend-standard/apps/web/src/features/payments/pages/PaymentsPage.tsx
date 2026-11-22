@@ -6,10 +6,13 @@ import { paymentsApi } from '../../../shared/api/modules';
 import { useAccount } from '../../../shared/hooks/useAccount';
 import { privateRequest, uploadImage } from '../../../shared/api/media';
 import { PrivateImage } from '../../../shared/ui/PrivateImage';
+import { formatVND } from '../../../shared/utils/formatters';
 export function PaymentsPage() {
   const session = useAccount();
   const [lookup, setLookup] = useState('');
   const nav = useNavigate();
+  const [invalidLookup, setInvalidLookup] = useState(false);
+  const isAdmin = session?.role === 'ADMIN';
   const deposits = useInfiniteQuery({
     queryKey: ['payments', session?.accountId, 'deposits'],
     initialPageParam: undefined as string | undefined,
@@ -19,60 +22,82 @@ export function PaymentsPage() {
   });
   return (
     <>
-      <h1>Hợp đồng & tiền cọc</h1>
-      <p className="muted">Cọc 5% được mô phỏng. Tiền mua lúa thanh toán ngoài ứng dụng.</p>
+      <h1>{isAdmin ? 'Tra cứu tranh chấp' : 'Hợp đồng và tiền cọc'}</h1>
+      <p className="muted">
+        {isAdmin
+          ? 'Nhập mã hồ sơ để mở tranh chấp cần xử lý.'
+          : 'Cọc 5% được mô phỏng. Tiền mua lúa thanh toán ngoài ứng dụng.'}
+      </p>
       <section className="panel">
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (z.uuid().safeParse(lookup).success) void nav('/payments/contracts/' + lookup);
+            const id = lookup.trim();
+            if (!z.uuid().safeParse(id).success) {
+              setInvalidLookup(true);
+              return;
+            }
+            void nav((isAdmin ? '/payments/disputes/' : '/payments/contracts/') + id);
           }}
         >
           <label>
-            Mã hợp đồng
+            {isAdmin ? 'Mã tranh chấp' : 'Mã hợp đồng'}
             <input
               value={lookup}
-              onChange={(e) => setLookup(e.target.value)}
+              onChange={(e) => {
+                setLookup(e.target.value);
+                setInvalidLookup(false);
+              }}
               required
-              pattern="[0-9a-fA-F-]{36}"
+              aria-invalid={invalidLookup}
+              aria-describedby={invalidLookup ? 'payment-lookup-error' : undefined}
+              autoComplete="off"
+              spellCheck={false}
             />
           </label>
-          <button>Mở hợp đồng</button>
+          {invalidLookup && (
+            <p id="payment-lookup-error" className="error" role="alert">
+              Mã chưa đúng định dạng UUID. Kiểm tra mã rồi thử lại.
+            </p>
+          )}
+          <button>{isAdmin ? 'Mở tranh chấp' : 'Mở hợp đồng'}</button>
         </form>
       </section>
-      <section className="panel">
-        <h2>Lịch sử cọc</h2>
-        {deposits.isPending && session?.role !== 'ADMIN' && <p>Đang tải…</p>}
-        {deposits.error && (
-          <p className="error">
-            {deposits.error.message}
-            <button onClick={() => void deposits.refetch()}>Thử lại</button>
-          </p>
-        )}
-        {deposits.data?.pages[0]?.data.length === 0 && (
-          <p>Chưa có tiền cọc. Hợp đồng được tạo từ cuộc trò chuyện.</p>
-        )}
-        {deposits.data?.pages
-          .flatMap((p) => p.data)
-          .map((d) => (
-            <article className="room-link" key={d.paymentTrackingId}>
-              <Link to={'/payments/contracts/' + d.contractId}>
-                Hợp đồng {d.contractId.slice(0, 8)}
-              </Link>
-              <p>
-                {d.depositAmount} VND · {d.status}
-              </p>
-            </article>
-          ))}
-        {deposits.hasNextPage && (
-          <button
-            disabled={deposits.isFetchingNextPage}
-            onClick={() => void deposits.fetchNextPage()}
-          >
-            Xem thêm
-          </button>
-        )}
-      </section>
+      {!isAdmin && (
+        <section className="panel">
+          <h2>Lịch sử cọc</h2>
+          {deposits.isPending && session?.role !== 'ADMIN' && <p>Đang tải…</p>}
+          {deposits.error && (
+            <p className="error">
+              {deposits.error.message}
+              <button onClick={() => void deposits.refetch()}>Thử lại</button>
+            </p>
+          )}
+          {deposits.data?.pages[0]?.data.length === 0 && (
+            <p>Chưa có tiền cọc. Hợp đồng được tạo từ cuộc trò chuyện.</p>
+          )}
+          {deposits.data?.pages
+            .flatMap((p) => p.data)
+            .map((d) => (
+              <article className="room-link" key={d.paymentTrackingId}>
+                <Link to={'/payments/contracts/' + d.contractId}>
+                  Hợp đồng {d.contractId.slice(0, 8)}
+                </Link>
+                <p>
+                  {formatVND(d.depositAmount)} · {d.status}
+                </p>
+              </article>
+            ))}
+          {deposits.hasNextPage && (
+            <button
+              disabled={deposits.isFetchingNextPage}
+              onClick={() => void deposits.fetchNextPage()}
+            >
+              Xem thêm
+            </button>
+          )}
+        </section>
+      )}
     </>
   );
 }
