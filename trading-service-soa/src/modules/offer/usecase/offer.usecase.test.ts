@@ -408,5 +408,39 @@ describe("Offer Module - CQRS Handlers and Use Case", () => {
     const accepted = await useCase.acceptOffer(farmerId, created.offerId);
     assert.strictEqual(accepted.status, OfferStatus.ACCEPTED);
   });
+
+  it("supports offeredPrice, duplicate PENDING guard, rejectOffer, and cancelOffer", async () => {
+    const offerRepo = new MockOfferRepository();
+    const listingRepo = new MockListingRepository();
+    listingRepo.listings.push({ ...sampleListing });
+
+    const useCase = new OfferUseCase(offerRepo, listingRepo);
+
+    const first = await useCase.createOffer(traderId, {
+      listingId,
+      offeredPrice: "4500000",
+    });
+    assert.strictEqual(first.offeredPrice, "4500000.00");
+    assert.strictEqual(first.status, OfferStatus.PENDING);
+
+    await assert.rejects(
+      () => useCase.createOffer(traderId, { listingId, offeredPrice: "4400000.00" }),
+      (err: any) => {
+        assert(err instanceof AppError);
+        assert.strictEqual(err.getStatusCode(), 409);
+        assert.strictEqual(err.getCode(), "PENDING_OFFER_EXISTS");
+        return true;
+      },
+    );
+
+    const rejected = await useCase.rejectOffer(farmerId, first.offerId);
+    assert.strictEqual(rejected.status, OfferStatus.REJECTED);
+
+    const second = await useCase.createOffer(traderId, { listingId });
+    assert.strictEqual(second.offeredPrice, "4600000.00");
+
+    const canceled = await useCase.cancelOffer(traderId, second.offerId);
+    assert.strictEqual(canceled.status, OfferStatus.CANCELLED);
+  });
 });
 

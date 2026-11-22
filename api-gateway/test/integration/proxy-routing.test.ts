@@ -202,6 +202,7 @@ describe('Reverse Proxy Routing Matrix & Streaming Tests (BA - SOA.md §4, §15,
         'x-user-id': 'attacker-user-id',
         'x-user-role': 'ADMIN',
         'x-service-key': 'attacker-stolen-service-key',
+        expect: '100-continue',
       },
     });
 
@@ -211,6 +212,7 @@ describe('Reverse Proxy Routing Matrix & Streaming Tests (BA - SOA.md §4, §15,
     expect(requests[0].headers['x-user-id']).toBeUndefined();
     expect(requests[0].headers['x-user-role']).toBeUndefined();
     expect(requests[0].headers['x-service-key']).toBeUndefined();
+    expect(requests[0].headers['expect']).toBeUndefined();
   });
 
   it('TC-MEDIA-01: Rejects upload exceeding 5 MiB with 413 PAYLOAD_TOO_LARGE (§18)', async () => {
@@ -282,5 +284,18 @@ describe('Reverse Proxy Routing Matrix & Streaming Tests (BA - SOA.md §4, §15,
     const body = JSON.parse(response.body);
     expect(body.code).toBe(ERROR_CODES.DEPENDENCY_UNAVAILABLE);
     expect(body.message).toBe('Upstream dependency unavailable');
+  });
+
+  it('TC-MEDIA-03: Allows public GET /api/v1/listings/media/:mediaId without Authorization header', async () => {
+    const mediaPath = '/api/v1/listings/media/01950123-4567-789a-bcde-0123456789ab';
+    const response = await app.inject({
+      method: 'GET',
+      url: mediaPath,
+    });
+
+    expect(response.statusCode).toBe(200);
+    const requests = tradingUpstream.getRecordedRequests();
+    expect(requests).toHaveLength(1);
+    expect(requests[0].url).toBe(mediaPath);
   });
 });

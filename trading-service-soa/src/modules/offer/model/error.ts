@@ -26,3 +26,11 @@ export const ErrCannotOfferOwnListing = new Error(
   "You cannot make an offer on your own listing",
 );
 
+export const ErrPendingOfferExists = new Error(
+  "You already have a pending offer on this listing",
+);
+
+export const ErrNotOfferCreator = new Error(
+  "Only the trader who submitted this offer can cancel it",
+);
+

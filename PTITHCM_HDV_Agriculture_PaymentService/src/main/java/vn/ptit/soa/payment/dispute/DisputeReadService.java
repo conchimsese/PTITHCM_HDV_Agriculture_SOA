@@ -53,7 +53,8 @@ public class DisputeReadService {
         DecisionReversal reversal = reversals.findByDispute(dispute.disputeId()).orElse(null);
         AdminDisputeFilingRepository.Filing filing = asAdmin
                 ? filings.find(dispute.disputeId()).orElse(null) : null;
-        return new DisputeDetail(dispute.disputeId(), dispute.contractId(), dispute.openedBy(),
+        return new DisputeDetail(dispute.disputeId(), dispute.contractId(), contract.farmerId(),
+                contract.traderId(), dispute.openedBy(),
                 dispute.reasonCode(), dispute.description(), dispute.status(),
                 dispute.depositHold(), dispute.assignedAdminId(), dispute.responseDueAt(),
                 dispute.resolvedAt(), dispute.outcome(), dispute.stateVersion(),
@@ -85,7 +86,8 @@ public class DisputeReadService {
             Instant completedConfirmedAt, long stateVersion, Instant createdAt,
             Instant updatedAt, DisputeSummary disputeSummary) {}
 
-    public record DisputeDetail(String disputeId, String contractId, String openedBy,
+    public record DisputeDetail(String disputeId, String contractId, String farmerId,
+            String traderId, String openedBy,
             String reasonCode, String description, String status, boolean depositHold,
             String assignedAdminId, Instant responseDueAt, Instant resolvedAt,
             String outcome, long stateVersion, long decisionVersion, Instant createdAt,

@@ -59,8 +59,8 @@ RUN npx prisma generate
 # Copy compiled JavaScript from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Create keys folder placeholder for RS256 JWT public key mount
-RUN mkdir -p /app/keys
+# Create keys and media folders for runtime mounts
+RUN mkdir -p /app/keys /app/.media
 
 # Set permissions for non-root user
 RUN chown -R node:node /app

@@ -35,6 +35,16 @@ export interface AcceptOfferCommand {
   offerId: string;
 }
 
+export interface RejectOfferCommand {
+  farmerId: string;
+  offerId: string;
+}
+
+export interface CancelOfferCommand {
+  traderId: string;
+  offerId: string;
+}
+
 export interface GetOfferDetailQuery {
   offerId: string;
   requesterId: string;
@@ -70,6 +80,16 @@ export interface IOfferUseCase {
 
   acceptOffer(
     farmerId: string,
+    offerId: string,
+  ): Promise<OfferResponseDTO>;
+
+  rejectOffer?(
+    farmerId: string,
+    offerId: string,
+  ): Promise<OfferResponseDTO>;
+
+  cancelOffer?(
+    traderId: string,
     offerId: string,
   ): Promise<OfferResponseDTO>;
 

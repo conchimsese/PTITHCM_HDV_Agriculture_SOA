@@ -26,11 +26,17 @@ export const PUBLIC_ROUTES: RouteRule[] = [
 /**
  * Helper to check whether a request is a public route.
  */
+const PUBLIC_LISTING_MEDIA_REGEX = /^\/api\/v1\/listings\/media\/[0-9a-f-]{36}$/i;
+
 export function isPublicRoute(method: string, url: string): boolean {
   // Strip query string for path comparison
   const path = url.split('?')[0];
+  const upperMethod = method.toUpperCase();
+  if (upperMethod === 'GET' && PUBLIC_LISTING_MEDIA_REGEX.test(path)) {
+    return true;
+  }
   return PUBLIC_ROUTES.some(
-    (route) => route.method === method.toUpperCase() && route.path === path
+    (route) => route.method === upperMethod && route.path === path
   );
 }
 

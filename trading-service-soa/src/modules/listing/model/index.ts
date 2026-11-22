@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { formatMoney } from "@share/util";
 
 // ─── Listing Status (BA-SOA §5: OPEN → LOCKED → SOLD) ──
 
@@ -21,6 +22,7 @@ export const ListingSchema = z.object({
   latitude:                 z.number().min(-90).max(90),
   longitude:                z.number().min(-180).max(180),
   expectedPrice:            z.string().regex(/^\d+(\.\d{1,2})?$/, 'Must be a decimal string (e.g. "4600000.00")'),
+  images:                   z.array(z.string()).optional(),
   status:                   z.nativeEnum(ListingStatus),
   winningContractId:        z.string().uuid().nullable(),
   winningPaymentTrackingId: z.string().uuid().nullable(),
@@ -37,7 +39,11 @@ export type Listing = z.infer<typeof ListingSchema>;
 export const CreateListingDTOSchema = z.object({
   plotId:        z.string().uuid({ message: 'plotId must be a valid UUID' }),
   cropSeasonId:  z.string().uuid({ message: 'cropSeasonId must be a valid UUID' }),
-  expectedPrice: z.string().regex(/^\d+(\.\d{1,2})?$/, 'expectedPrice must be a positive decimal string in VND (e.g. "4600000.00")'),
+  expectedPrice: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, 'expectedPrice must be a positive decimal string in VND (e.g. "4600000.00")')
+    .refine((val) => parseFloat(val) > 0, 'expectedPrice must be greater than 0'),
+  images:        z.array(z.string().trim().min(1).max(1000)).max(5).optional(),
 });
 
 export type CreateListingDTO = z.infer<typeof CreateListingDTOSchema>;
@@ -68,6 +74,7 @@ export const ListingResponseDTOSchema = z.object({
   latitude:      z.number(),
   longitude:     z.number(),
   expectedPrice: z.string(),
+  images:        z.array(z.string()),
   status:        z.nativeEnum(ListingStatus),
 });
 
@@ -84,7 +91,8 @@ export function toListingResponseDTO(listing: Listing): ListingResponseDTO {
     area:           listing.area,
     latitude:       listing.latitude,
     longitude:      listing.longitude,
-    expectedPrice:  listing.expectedPrice,
+    expectedPrice:  formatMoney(listing.expectedPrice),
+    images:         listing.images ?? [],
     status:         listing.status,
   };
 }

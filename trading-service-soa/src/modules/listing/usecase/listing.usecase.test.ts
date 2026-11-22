@@ -17,6 +17,7 @@ import {
 } from "../model";
 import { PagingDTO } from "@share/model/paging";
 import { AppError } from "@share/app-error";
+import { parseMultipartFormData } from "../infras/transport";
 
 class MockListingRepository implements IListingRepository {
   public listings: Listing[] = [];
@@ -254,6 +255,51 @@ describe("ListingUseCase", () => {
     });
     assert.strictEqual(listResult.items.length, 1);
     assert.strictEqual(listResult.totalElements, 1);
+  });
+
+  it("supports optional images and canonical 2-decimal expectedPrice formatting", async () => {
+    const repo = new MockListingRepository();
+    const farming = new MockFarmingRpc();
+    farming.snapshotToReturn = {
+      plotId,
+      farmerId,
+      area: 2.0,
+      latitude: 10.1,
+      longitude: 105.9,
+      currentSeason: {
+        cropSeasonId,
+        cropType: "OM18 Rice",
+        expectedYield: 12.0,
+      },
+    };
+    const useCase = new ListingUseCase(repo, farming);
+    const created = await useCase.createListing(farmerId, {
+      plotId,
+      cropSeasonId,
+      expectedPrice: "4600000",
+      images: ["http://localhost:8080/api/v1/listings/media/01950123-4567-789a-bcde-0123456789ab"],
+    });
+    assert.strictEqual(created.expectedPrice, "4600000.00");
+    assert.deepStrictEqual(created.images, [
+      "http://localhost:8080/api/v1/listings/media/01950123-4567-789a-bcde-0123456789ab",
+    ]);
+  });
+
+  it("parses multipart/form-data with quoted and unquoted boundary/disposition headers", () => {
+    const boundary = "abc-123";
+    const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const payload = Buffer.concat([
+      Buffer.from(`--${boundary}\r\nContent-Type: image/png\r\nContent-Disposition: form-data; name=images; filename=a.png\r\n\r\n`),
+      pngHeader,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+    const parts = parseMultipartFormData(
+      payload,
+      `multipart/form-data; boundary="${boundary}"`,
+    );
+    assert.strictEqual(parts.length, 1);
+    assert.strictEqual(parts[0].fieldName, "images");
+    assert.deepStrictEqual(parts[0].data, pngHeader);
   });
 });
 

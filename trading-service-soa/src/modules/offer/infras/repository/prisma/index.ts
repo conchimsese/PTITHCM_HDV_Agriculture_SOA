@@ -4,6 +4,7 @@ import {
   OfferStatus as PrismaOfferStatus,
 } from "@prisma/client";
 import { PagingDTO } from "@share/model/paging";
+import { formatMoney } from "@share/util";
 import { IOfferRepository } from "@modules/offer/interface";
 import {
   Offer,
@@ -26,6 +27,7 @@ export class PrismaOfferRepository implements IOfferRepository {
         listingId: offer.listingId,
         farmerId: offer.farmerId,
         traderId: offer.traderId,
+        offeredPrice: offer.offeredPrice ?? "0.00",
         depositAmount: offer.depositAmount,
         status: offer.status as PrismaOfferStatus,
       },
@@ -117,7 +119,8 @@ export class PrismaOfferRepository implements IOfferRepository {
       listingId: row.listingId,
       farmerId: row.farmerId,
       traderId: row.traderId,
-      depositAmount: row.depositAmount.toString(),
+      offeredPrice: formatMoney(row.offeredPrice),
+      depositAmount: formatMoney(row.depositAmount),
       status: row.status as OfferStatus,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

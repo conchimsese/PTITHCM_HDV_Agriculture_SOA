@@ -28,6 +28,7 @@ public class DepositOutboxRepository {
                 "depositId", tracking.paymentTrackingId(),
                 "paymentId", tracking.paymentTrackingId(),
                 "contractId", contract.contractId(),
+                "offerId", contract.offerId(),
                 "farmerId", contract.farmerId(),
                 "traderId", contract.traderId(),
                 "amount", tracking.depositAmount().toPlainString(),

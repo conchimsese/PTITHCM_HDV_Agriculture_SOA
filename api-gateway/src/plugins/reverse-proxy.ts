@@ -63,6 +63,7 @@ export const reverseProxyPlugin: FastifyPluginAsync<ReverseProxyPluginOptions> =
       await app.register(httpProxy, {
         upstream: route.upstream,
         prefix: route.prefix,
+        rewritePrefix: route.prefix,
         websocket: true,
       });
     } else {

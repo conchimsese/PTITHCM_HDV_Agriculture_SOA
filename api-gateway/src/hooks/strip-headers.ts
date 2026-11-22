@@ -9,4 +9,6 @@ export async function stripSpoofedHeadersHook(request: FastifyRequest): Promise<
   delete request.headers['x-user-id'];
   delete request.headers['x-user-role'];
   delete request.headers['x-service-key'];
+  // Prevent undici UND_ERR_NOT_SUPPORTED ("expect header not supported") when clients send Expect: 100-continue
+  delete request.headers.expect;
 }

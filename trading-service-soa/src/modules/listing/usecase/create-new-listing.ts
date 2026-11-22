@@ -1,5 +1,6 @@
 import { AppError } from "@share/app-error";
 import { ICommandHandler } from "@share/interface";
+import { formatMoney } from "@share/util";
 import { v7 } from "uuid";
 import {
   CreateListingCommand,
@@ -80,7 +81,8 @@ export class CreateNewListingCmdHandler
       area: snapshot.area,
       latitude: snapshot.latitude,
       longitude: snapshot.longitude,
-      expectedPrice: validatedDto.expectedPrice,
+      expectedPrice: formatMoney(validatedDto.expectedPrice),
+      images: validatedDto.images ?? [],
       status: ListingStatus.OPEN,
       winningContractId: null,
       winningPaymentTrackingId: null,

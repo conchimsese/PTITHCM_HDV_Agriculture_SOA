@@ -301,8 +301,11 @@ services:
       SERVICE_KEY_TRADING_TO_USER: ${INTERNAL_TRADING_KEY:?Set INTERNAL_TRADING_KEY in .env}
       SERVICE_KEY_TRADING_TO_FARMING: ${SERVICE_KEY_TRADING_TO_FARMING:?Set SERVICE_KEY_TRADING_TO_FARMING in .env}
       SERVICE_KEY_PAYMENT: ${SERVICE_KEY_PAYMENT_TO_TRADING:?Set SERVICE_KEY_PAYMENT_TO_TRADING in .env}
+      LISTING_MEDIA_DIR: /app/.media
+      PUBLIC_GATEWAY_URL: http://localhost:8080
     volumes:
       - ../../user-service/secrets/local-auth/public.pem:/app/keys/public.pem:ro
+      - trading_media_data:/app/.media
     depends_on:
       trading-db:
         condition: service_healthy
@@ -480,6 +483,7 @@ volumes:
   user_media_data:
   farming_db_data:
   trading_db_data:
+  trading_media_data:
   chat_db_data:
   chat_media_data:
   payment_db_data:
