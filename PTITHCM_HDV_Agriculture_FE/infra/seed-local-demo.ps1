@@ -235,7 +235,8 @@ $plotDefs = @(
     @{
         key           = "st25"
         name          = (U "Ru\u1ed9ng ST25 M\u1ef9 Xuy\u00ean (L\u00f4 A1)")
-        area          = 2.5
+        area          = 25000
+        areaHa        = 2.5
         location      = (U "M\u1ef9 Xuy\u00ean, S\u00f3c Tr\u0103ng")
         description   = (U "\u0110\u1ea5t ph\u00f9 sa ven s\u00f4ng, canh t\u00e1c l\u00faa th\u01a1m ST25 h\u1eefu c\u01a1.")
         latitude      = 9.5582
@@ -255,7 +256,8 @@ $plotDefs = @(
     @{
         key           = "om18"
         name          = (U "Ru\u1ed9ng OM18 Tho\u1ea1i S\u01a1n (L\u00f4 B2)")
-        area          = 3.2
+        area          = 32000
+        areaHa        = 3.2
         location      = (U "Tho\u1ea1i S\u01a1n, An Giang")
         description   = (U "V\u00f9ng chuy\u00ean canh l\u00faa OM18 ch\u1ea5t l\u01b0\u1ee3ng cao, thu\u1eadn ti\u1ec7n ghe t\u1ea3i.")
         latitude      = 10.2584
@@ -286,6 +288,16 @@ foreach ($def in $plotDefs) {
             latitude    = $def.latitude
             longitude   = $def.longitude
         }
+    } elseif ([double]$plot.area -lt 100) {
+        $plot = Invoke-Api -Method "PUT" -Url "$base/api/v1/plots/$($plot.plotId)" -Token $farmer.accessToken -Body @{
+            name        = $def.name
+            area        = $def.area
+            location    = $def.location
+            description = $def.description
+            latitude    = $def.latitude
+            longitude   = $def.longitude
+        }
+        Write-Output "[seed] Upgraded plot '$($def.name)' area to $($plot.area) m2"
     }
 
     $seasonsResp = Invoke-Api -Method "GET" -Url "$base/api/v1/plots/$($plot.plotId)/crop-seasons" -Token $farmer.accessToken
@@ -306,7 +318,7 @@ foreach ($def in $plotDefs) {
             workType    = "LAND_PREPARATION"
             workDate    = "2026-01-16"
             description = $def.log1Desc
-            quantity    = $def.area
+            quantity    = $def.areaHa
             unit        = "ha"
         }
         $null = Invoke-Api -Method "POST" -Url "$base/api/v1/crop-seasons/$($season.cropSeasonId)/logs" -Token $farmer.accessToken -Body @{
