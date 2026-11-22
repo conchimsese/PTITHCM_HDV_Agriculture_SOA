@@ -45,6 +45,17 @@ class CropSeasonsService {
     return season;
   }
 
+  async listPlotSeasons(farmerId, plotId) {
+    const plot = await this.plotsRepository.findById(plotId);
+    if (!plot) {
+      throw new NotFoundError(`Plot with id ${plotId} not found`);
+    }
+    if (plot.farmerId !== farmerId) {
+      throw new ForbiddenError('You do not have permission to view this plot');
+    }
+    return { items: await this.cropSeasonsRepository.findByPlotId(plotId) };
+  }
+
   async updateCropSeason(farmerId, cropSeasonId, updateData) {
     const season = await this.cropSeasonsRepository.findById(cropSeasonId);
     if (!season) {

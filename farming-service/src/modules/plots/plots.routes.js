@@ -66,6 +66,12 @@ router.patch(
 );
 
 // 6.6 Create Crop Season on Plot: POST /api/v1/plots/{plotId}/crop-seasons
+router.get(
+  '/:plotId/crop-seasons',
+  validateRequest({ params: plotIdParamSchema }),
+  cropSeasonsController.listForPlot
+);
+
 router.post(
   '/:plotId/crop-seasons',
   validateRequest({ params: plotIdParamSchema, body: createCropSeasonSchema }),

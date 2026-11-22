@@ -35,8 +35,12 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MiB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export function CreateListingForm() {
-  const [plotId, setPlotId] = useState('');
-  const [cropSeasonId, setCropSeasonId] = useState('');
+  const [plotId, setPlotId] = useState(
+    () => new URLSearchParams(window.location.search).get('plotId') ?? '',
+  );
+  const [cropSeasonId, setCropSeasonId] = useState(
+    () => new URLSearchParams(window.location.search).get('cropSeasonId') ?? '',
+  );
   const [priceInput, setPriceInput] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);

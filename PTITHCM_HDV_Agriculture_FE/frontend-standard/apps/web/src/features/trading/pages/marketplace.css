@@ -776,3 +776,41 @@
     grid-template-columns: 1fr;
   }
 }
+
+.marketplace-page {
+  width: min(100%, 860px);
+  margin-inline: auto;
+}
+.marketplace-page .listings-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.marketplace-filters-panel summary {
+  cursor: pointer;
+  color: #164735;
+  font-weight: 650;
+}
+.marketplace-filters-panel[open] summary {
+  margin-bottom: 16px;
+}
+.feed-illustration {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.feed-illustration img {
+  display: block;
+  width: 100%;
+  height: clamp(140px, 24vw, 240px);
+  object-fit: cover;
+}
+.feed-illustration figcaption {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #fff;
+  color: #334c3d;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+}

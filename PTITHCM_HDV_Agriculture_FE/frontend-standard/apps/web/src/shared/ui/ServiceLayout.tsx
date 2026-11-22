@@ -1,11 +1,16 @@
-import { Link, Navigate, Outlet } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { setSession } from '@agri/api-client';
 import { useAccount } from '../hooks/useAccount';
 import { authApi, queryClient } from '../api/runtime';
 import './services.css';
 export function ServiceLayout() {
   const session = useAccount();
-  if (!session?.tokens) return <Navigate to="/dang-nhap" replace />;
+  const { pathname } = useLocation();
+  const demoChat =
+    session?.isDemo &&
+    session.role !== 'ADMIN' &&
+    (pathname === '/chat' || pathname.startsWith('/chat/'));
+  if (!session || (!session.tokens && !demoChat)) return <Navigate to="/dang-nhap" replace />;
   return (
     <div className="service-app">
       <header>
@@ -14,7 +19,8 @@ export function ServiceLayout() {
         </Link>
         <nav>
           <Link to="/chat">Tin nhắn</Link>
-          <Link to="/payments">Hợp đồng & cọc</Link>
+          {!demoChat && <Link to="/payments">Hợp đồng & cọc</Link>}
+          <Link to="/">Trang chủ</Link>
         </nav>
         <button
           onClick={() => {

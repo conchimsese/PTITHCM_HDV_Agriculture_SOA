@@ -220,7 +220,13 @@ services:
       INTERNAL_CHAT_KEY: ${INTERNAL_CHAT_KEY:?Set INTERNAL_CHAT_KEY in .env}
       INTERNAL_PAYMENT_KEY: ${INTERNAL_PAYMENT_KEY:?Set INTERNAL_PAYMENT_KEY in .env}
       INTERNAL_NOTIFICATION_KEY: ${INTERNAL_NOTIFICATION_KEY:?Set INTERNAL_NOTIFICATION_KEY in .env}
-      ADMIN_SEED_ENABLED: "false"
+      ADMIN_SEED_ENABLED: ${ADMIN_SEED_ENABLED:-false}
+      ADMIN_1_USERNAME: ${ADMIN_1_USERNAME:-}
+      ADMIN_1_EMAIL: ${ADMIN_1_EMAIL:-}
+      ADMIN_1_PASSWORD: ${ADMIN_1_PASSWORD:-}
+      ADMIN_2_USERNAME: ${ADMIN_2_USERNAME:-}
+      ADMIN_2_EMAIL: ${ADMIN_2_EMAIL:-}
+      ADMIN_2_PASSWORD: ${ADMIN_2_PASSWORD:-}
     volumes:
       - ../../user-service/secrets/local-auth:/run/user-secrets:ro
       - user_media_data:/var/lib/user-media
@@ -332,8 +338,8 @@ services:
       CHAT_OUTBOX_RELAY_ENABLED: "true"
       CHAT_CONTRACT_CONSUMER_ENABLED: "true"
       CHAT_OFFER_CONSUMER_ENABLED: "true"
-      CHAT_WS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
-      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      CHAT_WS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,${PUBLIC_APP_ORIGIN:-http://localhost:5173}
+      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,${PUBLIC_APP_ORIGIN:-http://localhost:5173}
       MEDIA_STORAGE_DIR: /app/.media
       JWT_PUBLIC_KEY_LOCATION: /run/jwt-public-keys
       JWT_ISSUER: urn:soa:user-service
@@ -374,7 +380,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:19092
       PAYMENT_OUTBOX_RELAY_ENABLED: "true"
       PAYMENT_REWARDS_ENABLED: "false"
-      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,${PUBLIC_APP_ORIGIN:-http://localhost:5173}
       MEDIA_STORAGE_DIR: /app/.media
       JWT_PUBLIC_KEY_LOCATION: /run/jwt-public-keys
       JWT_ISSUER: urn:soa:user-service

@@ -102,7 +102,7 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
       : 0;
 
   return (
-    <div className="modal-backdrop" onClick={handleClose} aria-hidden="true">
+    <div className="modal-backdrop" onClick={handleClose}>
       <div
         className="modal-container"
         onClick={(e) => e.stopPropagation()}

@@ -63,7 +63,7 @@ export function MarketplacePage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1>Thị trường thu mua lúa</h1>
+          <h1>Bảng tin bán lúa</h1>
           <p className="page-subtitle">
             Khám phá các sản phẩm lúa chất lượng cao từ nông dân, sắp xếp theo khoảng cách GPS gần
             nhất
@@ -77,7 +77,8 @@ export function MarketplacePage() {
       </div>
 
       {/* Filter and GPS Control Bar */}
-      <section className="marketplace-filters-panel" aria-label="Bộ lọc và định vị">
+      <details className="marketplace-filters-panel">
+        <summary>Bộ lọc và vị trí</summary>
         <div className="filters-row">
           {/* Seed Type Keyword Search */}
           <div className="filter-group search-group">
@@ -189,7 +190,7 @@ export function MarketplacePage() {
             </span>
           </div>
         )}
-      </section>
+      </details>
 
       {/* Main Content Area: Loading, Error, Empty, or Cards Grid */}
       {isLoading ? (
@@ -238,7 +239,7 @@ export function MarketplacePage() {
                 listing={listing}
                 userCoords={coords}
                 currentUserId={session?.accountId}
-                onMakeOffer={(item) => setSelectedListingForOffer(item)}
+                onMakeOffer={session?.role === 'TRADER' ? setSelectedListingForOffer : undefined}
               />
             ))}
           </div>

@@ -1,58 +1,22 @@
+import { LiveFarmingPage } from './LiveFarmingPage';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useSession } from '../../../shared/hooks/useAuth';
 import './farming.css';
 
-type Plot = { id: string; name: string; area: string; season: string; crop: string };
-type Entry = {
-  id: string;
-  plotId: string;
-  season: string;
-  date: string;
-  detail: string;
-  amount?: number;
-};
-type Data = { plots: Plot[]; journal: Entry[]; costs: Entry[] };
-const initial: Data = {
-  plots: [
-    { id: 'sample-1', name: 'Ruộng A1', area: '2.500 m²', season: 'Thu Đông 2026', crop: 'ST25' },
-    { id: 'sample-2', name: 'Ruộng B2', area: '1.800 m²', season: 'Hè Thu 2026', crop: 'OM18' },
-  ],
-  journal: [
-    {
-      id: 'j1',
-      plotId: 'sample-1',
-      season: 'Thu Đông 2026',
-      date: '2026-10-11',
-      detail: 'Bón phân lần 2',
-    },
-  ],
-  costs: [
-    {
-      id: 'c1',
-      plotId: 'sample-1',
-      season: 'Thu Đông 2026',
-      date: '2026-10-11',
-      detail: 'Phân bón',
-      amount: 720000,
-    },
-  ],
-};
-const storageKey = 'agri-farming-demo-v1';
-function load(): Data {
-  try {
-    const saved = sessionStorage.getItem(storageKey);
-    return saved ? (JSON.parse(saved) as Data) : initial;
-  } catch {
-    return initial;
-  }
-}
-
-export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
-  const session = useSession();
+import {
+  load,
+  storageKey,
+  selectedPlot,
+  selectedPlotKey,
+  type Data,
+  type Plot,
+  type Entry,
+} from '../demo';
+function DemoFarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
   const [data, setData] = useState(load);
-  const [selected, setSelected] = useState(data.plots[0]?.id ?? '');
+  const [selected, setSelected] = useState(() => selectedPlot(data)?.id ?? '');
   const [formOpen, setFormOpen] = useState(false);
   const plot = data.plots.find((item) => item.id === selected);
   const entries = data[page === 'costs' ? 'costs' : 'journal'].filter(
@@ -75,6 +39,7 @@ export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
         crop: '',
       };
       save({ ...data, plots: [...data.plots, item] });
+      sessionStorage.setItem(selectedPlotKey, item.id);
       setSelected(item.id);
     } else if (plot) {
       const entry: Entry = {
@@ -107,13 +72,6 @@ export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
     });
     setFormOpen(false);
   }
-  if (!session?.isDemo)
-    return (
-      <div className="farm-page">
-        <h1>Ruộng và mùa vụ</h1>
-        <p>Màn hình đang được chuẩn bị để kết nối dữ liệu canh tác.</p>
-      </div>
-    );
   return (
     <div className="farm-page">
       <p className="farm-kicker">CANH TÁC · DỮ LIỆU MẪU</p>
@@ -147,6 +105,7 @@ export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
           <select
             value={selected}
             onChange={(event) => {
+              sessionStorage.setItem(selectedPlotKey, event.target.value);
               setSelected(event.target.value);
               setFormOpen(false);
             }}
@@ -264,5 +223,15 @@ export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
         </section>
       )}
     </div>
+  );
+}
+
+export function FarmingPage({ page }: { page: 'plots' | 'journal' | 'costs' }) {
+  const session = useSession();
+  if (!session) return null;
+  return session.isDemo ? (
+    <DemoFarmingPage page={page} />
+  ) : (
+    <LiveFarmingPage key={session.accountId} page={page} accountId={session.accountId} />
   );
 }

@@ -1,3 +1,4 @@
+import riceIllustration from '../../../workspace/assets/rice_st25.svg';
 import { Link } from 'react-router-dom';
 import type { ListingDTO } from '@agri/contracts';
 import {
@@ -61,7 +62,7 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
         <span className={`status-pill ${currentStatus.className}`}>{currentStatus.label}</span>
       </div>
 
-      {listing.images && listing.images.length > 0 && (
+      {listing.images?.length ? (
         <div className="card-produce-media">
           <img
             src={listing.images[0]}
@@ -73,8 +74,12 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
             <span className="card-photo-count">📷 {listing.images.length} ảnh</span>
           )}
         </div>
+      ) : (
+        <figure className="feed-illustration">
+          <img src={riceIllustration} alt="" />
+          <figcaption>Minh họa ruộng lúa</figcaption>
+        </figure>
       )}
-
       <div className="card-price-section">
         <span className="price-label">Giá mong muốn:</span>
         <span className="price-value">{formatVND(listing.expectedPrice)}</span>

@@ -27,6 +27,18 @@ class CropSeasonsController {
     }
   };
 
+  listForPlot = async (req, res, next) => {
+    try {
+      const result = await this.cropSeasonsService.listPlotSeasons(
+        req.user.accountId,
+        req.params.plotId
+      );
+      return res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
   update = async (req, res, next) => {
     try {
       const farmerId = req.user.accountId;
