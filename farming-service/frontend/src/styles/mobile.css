@@ -1,0 +1,136 @@
+/* BA–SOA Reference V4 · Mobile presentation rules
+   One responsive component system; phone layout does not change domain behavior. */
+@media (max-width:767px) {
+  :root {--r-card:17px}
+  html {scroll-padding-top:78px}
+  body {font-size:16px;line-height:1.58;background:#f4f7f2}
+  .demo-ribbon {font-size:9px;min-height:26px;justify-content:center;padding:5px 8px}
+  .top {height:61px;box-shadow:0 2px 12px rgba(22,71,53,.045)}
+  .top-inner {padding:0 13px;gap:8px}
+  .logo {gap:8px}
+  .logo-mark {width:38px;height:38px;border-radius:12px}
+  .logo-copy strong {font-size:14px;letter-spacing:-.04em}
+  .logo-copy small {font-size:9px;margin-top:1px}
+  .top-actions {gap:7px}
+  .round-btn {height:37px;width:37px}
+  .role-select {min-height:37px;font-size:11px;max-width:122px;padding:6px 5px;border-color:#cbded0}
+  .shell:not(.chat-shell) {padding:14px 12px calc(96px + env(safe-area-inset-bottom))}
+  .head {margin-bottom:15px}
+  .head h1 {font-size:23px;line-height:1.4;letter-spacing:-.04em;margin:4px 0 6px}
+  .head p {font-size:13px;line-height:1.6}
+  .kicker {font-size:10px}
+  .card {padding:16px;border-radius:17px;margin-bottom:13px}
+  .card h2 {font-size:17px}
+  .card h3 {font-size:15px}
+  .card p {font-size:13px}
+  .card-hero {background:linear-gradient(120deg,#e8f2e5,#f7f8e8);padding:20px 17px}
+  .card-hero>.row {display:block}
+  .card-hero .hero-visual {display:none}
+  .card-hero h2 {font-size:22px;line-height:1.38}
+  .card-hero .button-row {display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .card-hero .button-row>.btn {padding:12px 8px;font-size:11px;min-height:50px}
+  .card-hero p {font-size:13px;max-width:none}
+  .btn {font-size:13px;min-height:47px}
+  .btn.sm {font-size:12px;min-height:40px}
+  .btn.primary {min-height:50px}
+  .quick-actions {gap:9px}
+  .quick-action {padding:13px 8px;min-height:100px;font-size:13px}
+  .quick-action .icon {height:28px;width:28px}
+  .card-row {align-items:flex-start;gap:9px}
+  .card-row h2 {font-size:16px}
+  .card-row .btn {flex-shrink:0}
+  .stats {gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat {padding:12px 10px}
+  .stat .label {font-size:11px}
+  .stat strong {font-size:16px;margin-top:5px;overflow-wrap:anywhere}
+  .listing-card {padding:16px 14px;margin-bottom:12px;border-radius:16px}
+  .listing-card>.row {gap:10px}
+  .listing-card .mini-rice {width:42px;height:42px;border-radius:12px}
+  .listing-title {font-size:15px;letter-spacing:-.02em}
+  .listing-meta {gap:7px 10px;font-size:12px;margin-top:12px;line-height:1.5}
+  .listing-sub {font-size:12px}
+  .status {font-size:10px;padding:5px 7px;max-width:145px;text-align:center;white-space:normal}
+  .section-head {align-items:flex-start;margin:20px 0 10px}
+  .section-head h2 {font-size:17px}
+  .section-head p {font-size:12px}
+  .tabs {flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;gap:4px}
+  .tabs button {flex:0 0 auto;min-width:110px;min-height:43px;font-size:12px}
+  .info-row {align-items:flex-start}
+  .info-row span,.info-row strong {font-size:12px}
+  .timeline {padding-left:23px}
+  .time-item {padding-bottom:21px}
+  .time-item p,.time-item small {font-size:12px}
+  .field label {font-size:13px}
+  .field input,.field select,.field textarea,.search-input {font-size:16px;min-height:50px}
+  .form-grid {grid-template-columns:1fr}
+  .field.wide {grid-column:auto}
+  .callout {font-size:12px;line-height:1.7}
+  .fine {font-size:11px}
+  .help {font-size:12px}
+  .two,.three,.four,.feature-grid {grid-template-columns:1fr 1fr}
+  .feature-link {padding:14px;min-height:104px}
+  .feature-link strong {font-size:13px}
+  .feature-link p {font-size:12px}
+  .button-row {display:flex;gap:8px}
+  .button-row>.btn {flex:1 1 auto}
+  .mobile-nav {height:calc(70px + env(safe-area-inset-bottom));padding:0 3px env(safe-area-inset-bottom);box-shadow:0 -6px 24px rgba(16,55,29,.08)}
+  .mobile-nav button {min-width:0;position:relative;gap:5px;font-size:10px;line-height:1.2;color:#607267;min-height:62px}
+  .mobile-nav button span {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-nav .icon {height:22px;width:22px}
+  .mobile-nav button.active {color:var(--brand-900)}
+  .mobile-nav button.active:before {content:'';height:3px;width:30px;background:var(--brand-700);border-radius:0 0 4px 4px;position:absolute;top:0}
+  .modal-shade {padding:0;align-items:flex-end}
+  .modal-box {width:100%;border-radius:24px 24px 0 0;padding:18px 17px calc(18px + env(safe-area-inset-bottom));max-height:91dvh;overflow:auto;box-shadow:0 -12px 50px #07180f33}
+  .modal-header {position:sticky;top:-18px;padding-top:4px;padding-bottom:13px;background:#fff;z-index:2;border-bottom:1px solid #eef1ec}
+  .modal-body {padding-top:10px}
+  .modal-actions {position:sticky;bottom:0;background:#fff;padding-top:12px;padding-bottom:3px;border-top:1px solid #eef1ec}
+  .modal-actions .btn {min-height:52px}
+  .token-colors {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .table-wrap {overflow:visible}
+  .data-table {display:block;min-width:0;width:100%;font-size:13px}
+  .data-table thead {display:none}
+  .data-table tbody {display:grid;gap:12px}
+  .data-table tr {display:grid;border:1px solid var(--line);border-radius:13px;padding:12px;background:#fff}
+  .data-table td {display:flex;align-items:flex-start;justify-content:space-between;gap:10px;text-align:right;padding:8px 3px;border-bottom:1px solid #eef2ed;overflow-wrap:anywhere;min-width:0}
+  .data-table tr td:last-child {border-bottom:0}
+  .data-table td:before {content:attr(data-label);font-size:11px;color:var(--muted);font-weight:700;text-align:left;flex:0 0 36%;white-space:normal}
+  .data-table td strong,.data-table td .btn {max-width:100%}
+  /* Messenger: list => thread, like native mobile applications */
+  .chat-shell {padding:0 0 calc(70px + env(safe-area-inset-bottom)) !important}
+  .chat-shell .side {height:calc(100dvh - 156px - env(safe-area-inset-bottom));min-height:420px;border:0;border-radius:0;background:#fff}
+  .chat-head {padding:18px 15px 11px}
+  .chat-head h2 {font-size:22px}
+  .chat-head label {font-size:12px}
+  .chat-list {height:calc(100% - 140px);padding:8px 9px}
+  .chat-item {padding:14px 9px;gap:10px;border-radius:12px;min-height:83px}
+  .chat-item .name {font-size:14px}
+  .chat-item .prev {font-size:12px;max-width:unset}
+  .chat-item .fine {font-size:11px}
+  .chat-item .time {font-size:11px}
+  .chat-item .unread {min-width:20px;height:20px;font-size:11px}
+  .chat-shell .center {height:calc(100dvh - 156px);max-height:none}
+  .thread {padding:16px 12px;gap:15px}
+  .bubble {font-size:14px;line-height:1.6}
+  .bubble-row small {font-size:10px}
+  .chat-top {padding:11px 12px;height:67px}
+  .chat-top .btn.sm {padding:8px;min-width:40px}
+  .chat-top small {font-size:11px}
+  .chat-compose {padding:10px 9px;gap:7px}
+  .chat-compose input {font-size:16px;padding:10px 13px;min-height:46px}
+  .chat-compose .btn {font-size:12px;min-width:60px;padding:10px 9px}
+  body.mobile-thread {overflow:hidden}
+  body.mobile-thread .demo-ribbon,body.mobile-thread .top,body.mobile-thread .mobile-nav {display:none}
+  body.mobile-thread .chat-shell {padding:0!important}
+  body.mobile-thread .chat-shell .center {height:100dvh;max-height:100dvh}
+  body.mobile-thread .toast {bottom:15px}
+  body.mobile-thread .chat-top {height:72px}
+  body.mobile-thread .chat-compose {padding-bottom:calc(11px + env(safe-area-inset-bottom))}
+  .toast {font-size:13px}
+}
+@media (max-width:360px) {
+ .logo-copy small {display:none}
+ .logo-copy strong {font-size:12px}
+ .role-select {max-width:116px}
+ .card-hero .button-row {grid-template-columns:1fr}
+ .two,.three,.four {grid-template-columns:1fr}
+}

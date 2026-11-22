@@ -1,0 +1,486 @@
+name: agriculture-soa
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # Shared Infrastructure (Kafka + Mailpit)
+  # ─────────────────────────────────────────────────────────────
+  kafka:
+    image: apache/kafka-native:3.9.1
+    container_name: kafka
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://:19092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9092"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  user-mail:
+    image: axllent/mailpit:v1.27.10
+    container_name: user-mail
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+    networks:
+      - soa-network
+
+  # ─────────────────────────────────────────────────────────────
+  # Separate Databases (One per Backend Service)
+  # ─────────────────────────────────────────────────────────────
+  user-db:
+    image: postgres:17-alpine
+    container_name: user-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user_app
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:?Set USER_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_app -d user_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  farming-db:
+    image: postgres:16-alpine
+    container_name: farming-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: farming_db
+      POSTGRES_USER: farming_user
+      POSTGRES_PASSWORD: ${FARMING_DB_PASSWORD:?Set FARMING_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - farming_db_data:/var/lib/postgresql/data
+      - ../../farming-service/src/database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farming_user -d farming_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  trading-db:
+    image: postgres:16-alpine
+    container_name: trading-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trading_db
+      POSTGRES_USER: trading_user
+      POSTGRES_PASSWORD: ${TRADING_DB_PASSWORD:?Set TRADING_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - trading_db_data:/var/lib/postgresql/data
+      - ./init-sql/trading_init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading_user -d trading_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  chat-db:
+    image: mongo:8.0
+    container_name: chat-db
+    restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - chat_db_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - soa-network
+
+  chat-mongo-init:
+    image: mongo:8.0
+    container_name: chat-mongo-init
+    restart: "no"
+    depends_on:
+      chat-db:
+        condition: service_healthy
+    entrypoint:
+      - mongosh
+      - --host
+      - chat-db
+      - --quiet
+      - --eval
+      - "try { rs.status(); } catch(e) { if(e.code === 94) { rs.initiate({_id:'rs0',members:[{_id:0,host:'chat-db:27017'}]}); } else { throw e; } }"
+    networks:
+      - soa-network
+
+  payment-db:
+    image: postgres:17-alpine
+    container_name: payment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: payment_owner
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5435:5432"
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment_owner -d payment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  notification-db:
+    image: postgres:16-alpine
+    container_name: notification-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_app
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5436:5432"
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification_app -d notification_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - soa-network
+
+  # ─────────────────────────────────────────────────────────────
+  # 6 Backend Services (Built from existing repo Dockerfiles)
+  # ─────────────────────────────────────────────────────────────
+  user-service:
+    build:
+      context: ../../user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      MEDIA_STORAGE_DIR: /var/lib/user-media
+      DB_URL: jdbc:postgresql://user-db:5432/user_db
+      DB_USERNAME: user_app
+      DB_PASSWORD: ${USER_DB_PASSWORD:?Set USER_DB_PASSWORD in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      OUTBOX_KAFKA_ENABLED: "true"
+      OUTBOX_EMAIL_ENABLED: "false"
+      PROFILE_BOOTSTRAP_ENABLED: "false"
+      REPUTATION_CONSUMER_ENABLED: "false"
+      MAIL_HOST: user-mail
+      MAIL_PORT: 1025
+      MAIL_FROM: user-service@localhost
+      MAIL_SMTP_AUTH: "false"
+      MAIL_STARTTLS: "false"
+      JWT_PRIVATE_KEY_PATH: /run/user-secrets/private.pem
+      JWT_PUBLIC_KEY_PATH: /run/user-secrets/public.pem
+      JWT_KEY_ID: ${JWT_KEY_ID:-local-2026-10-18}
+      OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?Set OTP_HMAC_SECRET in .env}
+      INTERNAL_GATEWAY_KEY: ${INTERNAL_GATEWAY_KEY:?Set INTERNAL_GATEWAY_KEY in .env}
+      INTERNAL_FARMING_KEY: ${INTERNAL_FARMING_KEY:?Set INTERNAL_FARMING_KEY in .env}
+      INTERNAL_TRADING_KEY: ${INTERNAL_TRADING_KEY:?Set INTERNAL_TRADING_KEY in .env}
+      INTERNAL_CHAT_KEY: ${INTERNAL_CHAT_KEY:?Set INTERNAL_CHAT_KEY in .env}
+      INTERNAL_PAYMENT_KEY: ${INTERNAL_PAYMENT_KEY:?Set INTERNAL_PAYMENT_KEY in .env}
+      INTERNAL_NOTIFICATION_KEY: ${INTERNAL_NOTIFICATION_KEY:?Set INTERNAL_NOTIFICATION_KEY in .env}
+      ADMIN_SEED_ENABLED: "false"
+    volumes:
+      - ../../user-service/secrets/local-auth:/run/user-secrets:ro
+      - user_media_data:/var/lib/user-media
+    depends_on:
+      user-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 25s
+    networks:
+      - soa-network
+
+  farming-service:
+    build:
+      context: ../../farming-service
+      dockerfile: Dockerfile
+    container_name: farming-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      NODE_ENV: development
+      DATABASE_URL: postgres://farming_user:${FARMING_DB_PASSWORD:?Set FARMING_DB_PASSWORD in .env}@farming-db:5432/farming_db
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_URL: http://user-service:8081
+      USER_SERVICE_KEY: ${INTERNAL_FARMING_KEY:?Set INTERNAL_FARMING_KEY in .env}
+      ACCESS_STATE_TIMEOUT_MS: 1000
+      TRADING_SERVICE_KEY: ${SERVICE_KEY_TRADING_TO_FARMING:?Set SERVICE_KEY_TRADING_TO_FARMING in .env}
+    volumes:
+      - ../../user-service/secrets/local-auth/public.pem:/app/keys/public.pem:ro
+    depends_on:
+      farming-db:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - soa-network
+
+  trading-service:
+    build:
+      context: ../../trading-service-soa
+      dockerfile: Dockerfile
+    container_name: trading-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      NODE_ENV: production
+      DATABASE_URL: postgresql://trading_user:${TRADING_DB_PASSWORD:?Set TRADING_DB_PASSWORD in .env}@trading-db:5432/trading_db?schema=public
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_URL: http://user-service:8081
+      FARMING_SERVICE_URL: http://farming-service:8082
+      ACCESS_STATE_TIMEOUT_MS: 1000
+      SERVICE_KEY_TRADING_TO_USER: ${INTERNAL_TRADING_KEY:?Set INTERNAL_TRADING_KEY in .env}
+      SERVICE_KEY_TRADING_TO_FARMING: ${SERVICE_KEY_TRADING_TO_FARMING:?Set SERVICE_KEY_TRADING_TO_FARMING in .env}
+      SERVICE_KEY_PAYMENT: ${SERVICE_KEY_PAYMENT_TO_TRADING:?Set SERVICE_KEY_PAYMENT_TO_TRADING in .env}
+    volumes:
+      - ../../user-service/secrets/local-auth/public.pem:/app/keys/public.pem:ro
+    depends_on:
+      trading-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      farming-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - soa-network
+
+  chat-service:
+    build:
+      context: ../../PTITHCM_HDV_Agriculture_ChatService
+      dockerfile: Dockerfile
+    container_name: chat-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      SERVER_ADDRESS: 0.0.0.0
+      SPRING_PROFILES_ACTIVE: secure,database-learning
+      MONGODB_URI: mongodb://chat-db:27017/chat_db?replicaSet=rs0&directConnection=true
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      CHAT_OUTBOX_RELAY_ENABLED: "true"
+      CHAT_CONTRACT_CONSUMER_ENABLED: "true"
+      CHAT_OFFER_CONSUMER_ENABLED: "true"
+      CHAT_WS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      MEDIA_STORAGE_DIR: /app/.media
+      JWT_PUBLIC_KEY_LOCATION: /run/jwt-public-keys
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_URL: http://user-service:8081
+      INTERNAL_SERVICE_KEY: ${INTERNAL_CHAT_KEY:?Set INTERNAL_CHAT_KEY in .env}
+      ACCESS_STATE_TIMEOUT_MS: 1000
+    volumes:
+      - ./keys:/run/jwt-public-keys:ro
+      - chat_media_data:/app/.media
+    depends_on:
+      chat-db:
+        condition: service_healthy
+      chat-mongo-init:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - soa-network
+
+  payment-service:
+    build:
+      context: ../../PTITHCM_HDV_Agriculture_PaymentService
+      dockerfile: Dockerfile
+    container_name: payment-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      SERVER_PORT: 8085
+      SERVER_ADDRESS: 0.0.0.0
+      SPRING_PROFILES_ACTIVE: secure,database-learning
+      DB_URL: jdbc:postgresql://payment-db:5432/payment_db
+      DB_USERNAME: payment_owner
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:?Set PAYMENT_DB_PASSWORD in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      PAYMENT_OUTBOX_RELAY_ENABLED: "true"
+      PAYMENT_REWARDS_ENABLED: "false"
+      API_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      MEDIA_STORAGE_DIR: /app/.media
+      JWT_PUBLIC_KEY_LOCATION: /run/jwt-public-keys
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_URL: http://user-service:8081
+      CHAT_SERVICE_URL: http://chat-service:8084
+      TRADING_SERVICE_URL: http://trading-service:8083
+      TRADING_SERVICE_KEY: ${SERVICE_KEY_PAYMENT_TO_TRADING:?Set SERVICE_KEY_PAYMENT_TO_TRADING in .env}
+      INTERNAL_SERVICE_KEY: ${INTERNAL_PAYMENT_KEY:?Set INTERNAL_PAYMENT_KEY in .env}
+      ACCESS_STATE_TIMEOUT_MS: 1000
+    volumes:
+      - ./keys:/run/jwt-public-keys:ro
+      - payment_media_data:/app/.media
+    depends_on:
+      payment-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      trading-service:
+        condition: service_healthy
+      chat-service:
+        condition: service_started
+    networks:
+      - soa-network
+
+  notification-service:
+    build:
+      context: ../../notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      DB_USERNAME: notification_app
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:?Set NOTIFICATION_DB_PASSWORD in .env}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+      KAFKA_CONSUMER_GROUP: notification-service-v1
+      JWT_PUBLIC_KEY_LOCATION: file:/run/jwt/public.pem
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_BASE_URL: http://user-service:8081
+      INTERNAL_SERVICE_KEY: ${INTERNAL_NOTIFICATION_KEY:?Set INTERNAL_NOTIFICATION_KEY in .env}
+      NOTIFICATION_RETENTION_DAYS: 90
+    volumes:
+      - ../../user-service/secrets/local-auth/public.pem:/run/jwt/public.pem:ro
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - soa-network
+
+  api-gateway:
+    build:
+      context: ../../api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      SERVER_HOST: 0.0.0.0
+      NODE_ENV: production
+      LOG_LEVEL: info
+      PUBLIC_APP_ORIGIN: ${PUBLIC_APP_ORIGIN:-http://localhost:5173}
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      JWT_CLOCK_SKEW_SECONDS: 60
+      JWT_PUBLIC_KEYS_JSON: ${JWT_PUBLIC_KEYS_JSON:?Set JWT_PUBLIC_KEYS_JSON in .env}
+      USER_SERVICE_URL: http://user-service:8081
+      FARMING_SERVICE_URL: http://farming-service:8082
+      TRADING_SERVICE_URL: http://trading-service:8083
+      CHAT_SERVICE_URL: http://chat-service:8084
+      CHAT_SERVICE_WS_URL: ws://chat-service:8084
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+      GATEWAY_TO_USER_SERVICE_KEY: ${INTERNAL_GATEWAY_KEY:?Set INTERNAL_GATEWAY_KEY in .env}
+      ACCESS_STATE_TIMEOUT_MS: 1000
+    depends_on:
+      user-service:
+        condition: service_healthy
+    networks:
+      - soa-network
+
+volumes:
+  kafka_data:
+  user_db_data:
+  user_media_data:
+  farming_db_data:
+  trading_db_data:
+  chat_db_data:
+  chat_media_data:
+  payment_db_data:
+  payment_media_data:
+  notification_db_data:
+
+networks:
+  soa-network:
+    name: soa-network
+    driver: bridge

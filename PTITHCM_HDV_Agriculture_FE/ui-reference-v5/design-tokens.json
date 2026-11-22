@@ -1,0 +1,51 @@
+{
+  "version": "BA-SOA-StyleC-5.0",
+  "date": "2026-10-19",
+  "colors": {
+    "brand900": "#164735",
+    "brand700": "#246B45",
+    "harvest500": "#D8AD47",
+    "ink": "#182820",
+    "background": "#F3F6F1",
+    "card": "#FFFFFF",
+    "border": "#DCE6DD",
+    "danger": "#A83939",
+    "warning": "#885B17",
+    "info": "#2C6590"
+  },
+  "font": "Be Vietnam Pro, Arial, sans-serif",
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32
+  ],
+  "radiusPx": {
+    "control": 12,
+    "card": 18
+  },
+  "breakpointsPx": {
+    "mobileMax": 767,
+    "tabletMax": 1050,
+    "desktopMin": 1051
+  },
+  "designIntent": "Farmer mobile-first; Facebook-like listing feed; Trader offer & GPS, Admin workspace; unified 3-column desktop and Messenger chat",
+  "businessContract": "BA-SOA MVP v2.1",
+  "note": "Visual tokens only, not API schema or business rules",
+  "notes": "Listing media and Farmer market browsing are UX proposals, not approved BA-SOA v2.1 API changes",
+  "marketFeed": {
+    "radiusFilterKm": [
+      5,
+      15,
+      30,
+      50
+    ],
+    "imageAspectRatio": "16:9 desktop, 1.35:1 mobile",
+    "buttonHeightMobilePx": 52,
+    "captionFontDesktopPx": 14,
+    "captionFontMobilePx": 14
+  }
+}

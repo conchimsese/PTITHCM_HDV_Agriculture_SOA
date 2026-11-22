@@ -1,0 +1,185 @@
+.service-app {
+  font:
+    16px/1.6 Georgia,
+    serif;
+  color: #182820;
+  background: #f3f6f1;
+  min-height: 100vh;
+}
+.service-app * {
+  box-sizing: border-box;
+}
+.service-app header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 5%;
+  background: #fff;
+  border-bottom: 1px solid #dce6dd;
+}
+.service-app a {
+  color: #246b45;
+}
+.service-app nav {
+  display: flex;
+  gap: 24px;
+}
+.brand {
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: none;
+}
+.brand small {
+  display: block;
+  font: 12px Arial;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.service-app main {
+  max-width: 1280px;
+  margin: auto;
+  padding: 32px 24px;
+}
+.service-app footer {
+  text-align: center;
+  padding: 24px;
+  color: #607267;
+}
+.service-app button,
+.service-app input,
+.service-app textarea,
+.service-app select {
+  font: inherit;
+  padding: 10px 14px;
+  border: 1px solid #b9cbbd;
+  border-radius: 10px;
+}
+.service-app button {
+  cursor: pointer;
+  background: #246b45;
+  color: white;
+  min-height: 44px;
+}
+.service-app button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.service-app input,
+.service-app textarea {
+  background: white;
+  width: 100%;
+}
+.service-app label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.service-app :focus-visible {
+  outline: 3px solid #d8ad47;
+  outline-offset: 3px;
+}
+.service-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+}
+.panel {
+  background: white;
+  border: 1px solid #dce6dd;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.panel h1,
+.panel h2 {
+  margin-top: 0;
+}
+.room-link {
+  display: block;
+  padding: 16px 0;
+  border-bottom: 1px solid #edf5ed;
+}
+.messages {
+  max-height: 55vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+.bubble {
+  max-width: 85%;
+  background: #edf5ed;
+  padding: 14px 18px;
+  border-radius: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.bubble.mine {
+  align-self: flex-end;
+  background: #164735;
+  color: white;
+}
+.bubble small {
+  display: block;
+  opacity: 0.7;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.service-app .error {
+  color: #a83939;
+  background: #fff0ee;
+  padding: 12px;
+  border-radius: 8px;
+}
+.muted {
+  color: #607267;
+}
+.service-app img {
+  max-width: 100%;
+  max-height: 350px;
+  border-radius: 12px;
+}
+.service-app dl {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+}
+.service-app dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.service-app time {
+  font-size: 12px;
+}
+.service-app table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.service-app td,
+.service-app th {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dce6dd;
+}
+@media (max-width: 720px) {
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+  .service-app header {
+    flex-wrap: wrap;
+  }
+  .service-app main {
+    padding: 20px 12px;
+  }
+  .panel {
+    padding: 16px;
+  }
+  .service-app table {
+    font-size: 13px;
+  }
+}

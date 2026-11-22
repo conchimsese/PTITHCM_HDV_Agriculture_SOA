@@ -1,0 +1,423 @@
+/* ─── Web Layout Shell Styles ────────────────────────────────────── */
+
+.web-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f3f6f1;
+  color: #182820;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────── */
+
+.layout-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background-color: #164735;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease-in-out;
+}
+
+.sidebar-brand {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.brand-leaf {
+  color: #d8ad47;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+}
+
+.brand-subtitle {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  color: #d8ad47;
+  margin-top: 2px;
+}
+
+/* User Card */
+.sidebar-user {
+  margin: 16px 16px 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.user-role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #246b45;
+  color: #ffffff;
+  width: fit-content;
+}
+
+.user-id {
+  font-size: 11px;
+  color: #b9cbbd;
+  font-family: monospace;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 12px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #dce6dd;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background-color: #246b45;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 #d8ad47;
+}
+
+.nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-switcher {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demo-label {
+  font-size: 10.5px;
+  color: #b9cbbd;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demo-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.demo-btn {
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.demo-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.demo-btn.active {
+  background: #d8ad47;
+  color: #182820;
+  border-color: #d8ad47;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  color: #ff9d9d;
+  border: 1px solid rgba(255, 100, 100, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(168, 57, 57, 0.2);
+  color: #ffffff;
+}
+
+/* ─── Main Body ──────────────────────────────────────────────────── */
+
+.layout-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Top Header */
+.layout-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #dce6dd;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.mobile-toggle-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #182820;
+  padding: 4px 8px;
+}
+
+.header-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-platform {
+  color: #607267;
+}
+
+.header-separator {
+  color: #b9cbbd;
+}
+
+.header-role {
+  color: #164735;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.header-action-btn.primary {
+  background-color: #246b45;
+  color: #ffffff;
+}
+
+.header-action-btn.primary:hover {
+  background-color: #164735;
+}
+
+.header-action-btn.secondary {
+  background-color: #edf5ed;
+  color: #164735;
+  border: 1px solid #b9cbbd;
+}
+
+.header-action-btn.secondary:hover {
+  background-color: #dce6dd;
+}
+
+.header-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #607267;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-dot.online {
+  background-color: #246b45;
+  box-shadow: 0 0 0 2px rgba(36, 107, 69, 0.2);
+}
+
+/* Page Content Viewport */
+.layout-content {
+  flex: 1;
+  padding: 28px;
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ─── Role Guard Card ────────────────────────────────────────────── */
+
+.role-guard-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 20px;
+}
+
+.role-guard-card {
+  max-width: 440px;
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 18px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.role-guard-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.role-guard-card h2 {
+  font-size: 20px;
+  color: #a83939;
+  margin: 0 0 10px;
+}
+
+.role-guard-card p {
+  font-size: 14px;
+  color: #607267;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ─── Responsive Media Queries ───────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .mobile-toggle-btn {
+    display: block;
+  }
+
+  .layout-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+  }
+
+  .web-layout.mobile-open .layout-sidebar {
+    transform: translateX(0);
+  }
+
+  .layout-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 90;
+  }
+
+  .layout-content {
+    padding: 16px;
+  }
+
+  .layout-header {
+    padding: 0 16px;
+  }
+}

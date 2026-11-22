@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+# Raw reference snapshots retain source formatting and are not lint targets.
+reference/contracts/** -whitespace

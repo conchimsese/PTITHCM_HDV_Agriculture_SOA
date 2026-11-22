@@ -1,0 +1,16 @@
+{
+  "eventId": "11111111-1111-4111-8111-111111111111",
+  "eventType": "OFFER_CREATED",
+  "eventVersion": 1,
+  "sourceService": "trading-service",
+  "occurredAt": "2026-10-19T10:00:00Z",
+  "actorId": "22222222-2222-4222-8222-222222222222",
+  "recipientIds": ["33333333-3333-4333-8333-333333333333"],
+  "referenceType": "OFFER",
+  "referenceId": "44444444-4444-4444-8444-444444444444",
+  "correlationId": "corr-001",
+  "data": {
+    "offerId": "44444444-4444-4444-8444-444444444444",
+    "listingId": "55555555-5555-4555-8555-555555555555"
+  }
+}

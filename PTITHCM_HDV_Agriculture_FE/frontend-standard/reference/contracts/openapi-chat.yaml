@@ -1,0 +1,407 @@
+# Generated from the tested secure application on 2026-10-29.
+openapi: 3.1.0
+info:
+  title: Chat Service API
+  description: REST API and WebSocket documentation for Chat Service (PTIT Agriculture
+    SOA)
+  contact:
+    name: PTIT SOA Team
+    email: group7@ptit.edu.vn
+  version: 1.0.0
+servers:
+- url: http://127.0.0.1:8084
+  description: Generated server url
+security:
+- BearerAuth: []
+paths:
+  /api/v1/conversations/{conversationId}/read:
+    put:
+      tags:
+      - secure-chat-message-controller
+      operationId: markRead
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ReadResult'
+  /learning/notes:
+    post:
+      tags:
+      - learning-note-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LearningNote'
+  /api/v1/conversations/{conversationId}/messages:
+    get:
+      tags:
+      - secure-chat-message-controller
+      operationId: history
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessagePage'
+    post:
+      tags:
+      - secure-chat-message-controller
+      operationId: send
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SentMessageResponse'
+  /api/v1/conversations/{conversationId}/media:
+    post:
+      tags:
+      - secure-chat-media-controller
+      operationId: upload
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadResult'
+  /learning/notes/{id}:
+    get:
+      tags:
+      - learning-note-controller
+      operationId: find
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LearningNote'
+  /health:
+    get:
+      tags:
+      - health-controller
+      operationId: health
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/conversations:
+    get:
+      tags:
+      - secure-conversation-read-controller
+      operationId: list
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConversationPage'
+  /api/v1/conversations/{conversationId}:
+    get:
+      tags:
+      - secure-conversation-read-controller
+      operationId: detail
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+  /api/v1/conversations/{conversationId}/media/{mediaId}:
+    get:
+      tags:
+      - secure-chat-media-controller
+      operationId: download
+      parameters:
+      - name: conversationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: mediaId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+components:
+  schemas:
+    ReadRequest:
+      type: object
+      properties:
+        messageId:
+          type: string
+        readerId:
+          type: string
+    ReadResult:
+      type: object
+      properties:
+        messageId:
+          type: string
+        isRead:
+          type: boolean
+        readAt:
+          type: string
+          format: date-time
+        unreadCount:
+          type: integer
+          format: int64
+    NoteRequest:
+      type: object
+      properties:
+        content:
+          type: string
+    LearningNote:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    SendMessageRequest:
+      type: object
+      properties:
+        messageType:
+          type: string
+        content:
+          type: string
+        attachmentUrl:
+          type: string
+        senderId:
+          type: string
+    SentMessageResponse:
+      type: object
+      properties:
+        messageId:
+          type: string
+        conversationId:
+          type: string
+        senderId:
+          type: string
+        messageType:
+          type: string
+        content:
+          type: string
+        attachmentUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    UploadResult:
+      type: object
+      properties:
+        mediaId:
+          type: string
+        attachmentUrl:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+    HealthResponse:
+      type: object
+      properties:
+        service:
+          type: string
+        status:
+          type: string
+    ChatMessage:
+      type: object
+      properties:
+        messageId:
+          type: string
+        conversationId:
+          type: string
+        senderId:
+          type: string
+        messageType:
+          type: string
+        content:
+          type: string
+        attachmentUrl:
+          type: string
+        contractId:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        readAt:
+          type: string
+          format: date-time
+    ConversationPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationSummary'
+        nextCursor:
+          type: string
+    ConversationSummary:
+      type: object
+      properties:
+        conversationId:
+          type: string
+        offerId:
+          type: string
+        participantIds:
+          type: array
+          items:
+            type: string
+        contractId:
+          type: string
+        status:
+          type: string
+        lastMessage:
+          $ref: '#/components/schemas/ChatMessage'
+        unreadCount:
+          type: integer
+          format: int64
+    ConversationDetail:
+      type: object
+      properties:
+        conversationId:
+          type: string
+        participantIds:
+          type: array
+          items:
+            type: string
+        offerId:
+          type: string
+        contractId:
+          type: string
+        status:
+          type: string
+    MessagePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+        nextCursor:
+          type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      description: RS256 JWT Access Token issued by User Service
+      name: BearerAuth
+      scheme: bearer
+      bearerFormat: JWT

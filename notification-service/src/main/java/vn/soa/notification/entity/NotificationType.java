@@ -1,0 +1,14 @@
+package vn.soa.notification.entity;
+
+public enum NotificationType {
+    OFFER_CREATED,
+    OFFER_ACCEPTED,
+    MESSAGE_CREATED,
+    CONTRACT_CREATED,
+    CONTRACT_STATUS_CHANGED,
+    DEPOSIT_PAID,
+    DEPOSIT_STATUS_CHANGED,
+    REPUTATION_CHANGED,
+    ACCOUNT_LOCKED,
+    ACCOUNT_UNLOCKED
+}

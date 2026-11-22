@@ -1,0 +1,1315 @@
+/* ─── Trading Feature Shared Page Styles ────────────────────────── */
+
+.trading-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #164735;
+  margin: 0 0 6px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #607267;
+  margin: 0;
+}
+
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #607267;
+  margin-bottom: 8px;
+}
+
+.breadcrumb-nav a {
+  color: #246b45;
+  text-decoration: none;
+}
+
+.breadcrumb-nav a:hover {
+  text-decoration: underline;
+}
+
+/* ─── Common Buttons & Badges ────────────────────────────────────── */
+
+.primary-button {
+  background-color: #246b45;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.primary-button:hover:not(:disabled) {
+  background-color: #164735;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background-color: #edf5ed;
+  color: #164735;
+  border: 1px solid #b9cbbd;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.secondary-button:hover {
+  background-color: #dce6dd;
+}
+
+/* Status Badges */
+.status-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.status-pill.large {
+  font-size: 13.5px;
+  padding: 6px 14px;
+}
+
+.status-pill.status-open {
+  background-color: #edf5ed;
+  color: #246b45;
+  border: 1px solid #b9cbbd;
+}
+
+.status-pill.status-locked {
+  background-color: #fef8ec;
+  color: #b07d12;
+  border: 1px solid #fae6b8;
+}
+
+.status-pill.status-sold {
+  background-color: #f3f6f1;
+  color: #607267;
+  border: 1px solid #dce6dd;
+}
+
+/* Alerts */
+.alert {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.alert-error {
+  background-color: #fdf2f2;
+  border: 1px solid #fbd5d5;
+  color: #a83939;
+}
+
+.alert-success {
+  background-color: #def7ec;
+  border: 1px solid #bcf0da;
+  color: #03543f;
+}
+
+/* ─── Farmer Metrics Row ─────────────────────────────────────────── */
+
+.farmer-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.metric-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #607267;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 750;
+  color: #164735;
+}
+
+.metric-value.open {
+  color: #246b45;
+}
+
+/* ─── Status Tabs Row ────────────────────────────────────────────── */
+
+.status-tabs-row {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #dce6dd;
+  padding-bottom: 8px;
+  overflow-x: auto;
+}
+
+.status-tab {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #607267;
+  cursor: pointer;
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.status-tab:hover {
+  background-color: #edf5ed;
+  color: #164735;
+}
+
+.status-tab.active {
+  background-color: #246b45;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ─── Table View (My Listings) ──────────────────────────────────── */
+
+.table-container {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.listings-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13.5px;
+}
+
+.listings-table th {
+  background-color: #f8faf7;
+  padding: 14px 18px;
+  font-weight: 600;
+  color: #164735;
+  border-bottom: 1px solid #dce6dd;
+}
+
+.listings-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #edf5ed;
+  vertical-align: middle;
+}
+
+.listings-table tr:hover td {
+  background-color: #fcfdfb;
+}
+
+.table-produce-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rice-cell-icon {
+  font-size: 20px;
+}
+
+.cell-subtext {
+  display: block;
+  font-size: 11px;
+  color: #607267;
+  font-family: monospace;
+}
+
+.price-cell {
+  font-weight: 700;
+  color: #d8ad47;
+  font-size: 14.5px;
+}
+
+.coords-cell {
+  font-family: monospace;
+  font-size: 12px;
+  color: #607267;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.table-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.table-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.table-btn.view {
+  background-color: #edf5ed;
+  color: #164735;
+  border: 1px solid #b9cbbd;
+}
+
+.table-btn.view:hover {
+  background-color: #dce6dd;
+}
+
+.table-btn.offers {
+  background-color: #246b45;
+  color: #ffffff;
+}
+
+.table-btn.offers:hover {
+  background-color: #164735;
+}
+
+/* ─── Create Listing Page & Form ─────────────────────────────────── */
+
+.create-listing-card {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 18px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.sample-plots-box {
+  background: #f8faf7;
+  border: 1px solid #dce6dd;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sample-plots-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #164735;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.sample-plots-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.sample-plot-btn {
+  background: #ffffff;
+  border: 1px solid #b9cbbd;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.sample-plot-btn:hover {
+  border-color: #246b45;
+  background-color: #edf5ed;
+}
+
+.sample-plot-btn.selected {
+  border-color: #246b45;
+  background-color: #edf5ed;
+  box-shadow: 0 0 0 2px rgba(36, 107, 69, 0.2);
+}
+
+.sample-plot-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #164735;
+}
+
+.sample-plot-desc {
+  font-size: 11px;
+  color: #607267;
+}
+
+.listing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #164735;
+}
+
+.required {
+  color: #a83939;
+}
+
+.form-input {
+  height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #b9cbbd;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #182820;
+  background: #ffffff;
+  transition: border-color 0.15s;
+}
+
+.form-input.monospace {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #246b45;
+  box-shadow: 0 0 0 3px rgba(36, 107, 69, 0.15);
+}
+
+.field-hint {
+  font-size: 12px;
+  color: #607267;
+}
+
+.price-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 55px;
+}
+
+.currency-suffix {
+  position: absolute;
+  right: 14px;
+  font-weight: 600;
+  color: #607267;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.price-preview-pill {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #246b45;
+  background: #edf5ed;
+  padding: 4px 10px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: #edf5ed;
+  border: 1px solid #b9cbbd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  color: #164735;
+  line-height: 1.5;
+}
+
+/* ─── Facebook-Style Produce Picture Composer ────────────────────── */
+
+.photo-upload-field {
+  background: #fcfdfb;
+  border: 1px solid #dce6dd;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.photo-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.photo-counter-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #164735;
+  background-color: #edf5ed;
+  border: 1px solid #b9cbbd;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.counter-warning {
+  color: #a83939;
+  font-weight: 500;
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.photo-preview-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f8faf7;
+  border: 1px solid #b9cbbd;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.photo-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-cover-tag {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background-color: #246b45;
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
+}
+
+.photo-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(22, 71, 53, 0.75);
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.photo-remove-btn:hover {
+  background: #a83939;
+  transform: scale(1.08);
+}
+
+.photo-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.photo-action-btn {
+  flex: 1;
+  min-width: 190px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+}
+
+.photo-action-btn .btn-icon {
+  font-size: 16px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Detail Page Produce Photo Gallery */
+.detail-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gallery-main-view {
+  width: 100%;
+  height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f8faf7;
+  border: 1px solid #dce6dd;
+  position: relative;
+}
+
+.gallery-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(22, 71, 53, 0.85);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.gallery-thumbnails-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.gallery-thumb-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
+  background: #edf5ed;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.gallery-thumb-btn.active {
+  border-color: #246b45;
+  box-shadow: 0 0 0 2px rgba(36, 107, 69, 0.3);
+}
+
+.gallery-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* ─── Listing Detail Page ────────────────────────────────────────── */
+
+.listing-detail-card {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #dce6dd;
+  padding-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.detail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.detail-rice-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.detail-title-group h1 {
+  font-size: 26px;
+  color: #164735;
+  margin: 0 0 4px;
+}
+
+.detail-id {
+  font-size: 12px;
+  font-family: monospace;
+  color: #607267;
+}
+
+/* Price & CTA Banner */
+.detail-price-banner {
+  background: #f8faf7;
+  border: 1px solid #dce6dd;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.price-tag-label {
+  font-size: 13px;
+  color: #607267;
+}
+
+.price-tag-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #d8ad47;
+  letter-spacing: -0.5px;
+}
+
+.owner-cta-group,
+.trader-cta-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cta-btn {
+  height: 44px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+/* Specs Details Grid */
+.section-title {
+  font-size: 18px;
+  color: #164735;
+  margin: 0;
+}
+
+.specs-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.spec-card {
+  background: #f8faf7;
+  border: 1px solid #edf5ed;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.spec-card-icon {
+  font-size: 24px;
+}
+
+.spec-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-card-label {
+  font-size: 12px;
+  color: #607267;
+}
+
+.spec-card-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #182820;
+}
+
+.spec-card-value.monospace {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+/* Technical Snapshot Info Box */
+.technical-snapshot-box {
+  background: #f3f6f1;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.technical-snapshot-box h4 {
+  font-size: 14.5px;
+  color: #164735;
+  margin: 0 0 6px;
+}
+
+.snapshot-desc {
+  font-size: 12.5px;
+  color: #607267;
+  margin: 0 0 14px;
+}
+
+.snapshot-ids-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.id-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #607267;
+  flex-wrap: wrap;
+}
+
+.id-tag code {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  color: #164735;
+  font-size: 12px;
+}
+
+/* Skeletons */
+.detail-skeleton {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeleton-line {
+  height: 20px;
+  background: #edf5ed;
+  border-radius: 6px;
+}
+
+.skeleton-line.title {
+  width: 40%;
+  height: 32px;
+}
+
+.skeleton-line.subtitle {
+  width: 60%;
+}
+
+.skeleton-box {
+  height: 240px;
+  background: #edf5ed;
+  border-radius: 14px;
+  margin-top: 16px;
+}
+
+/* ─── Produce Summary Banner (ListingOffersPage) ─────────────────── */
+
+.produce-summary-banner {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.summary-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-label {
+  font-size: 11.5px;
+  color: #607267;
+}
+
+.summary-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #182820;
+}
+
+.summary-val.highlight {
+  color: #d8ad47;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+/* ─── Offers List & Cards ────────────────────────────────────────── */
+
+.offers-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: opacity 0.2s;
+}
+
+.offers-list-container.fetching {
+  opacity: 0.7;
+}
+
+.offer-card {
+  background: #ffffff;
+  border: 1px solid #dce6dd;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+}
+
+.offer-card:hover {
+  transform: translateY(-2px);
+  border-color: #b9cbbd;
+}
+
+.offer-card.accepted {
+  border-left: 4px solid #246b45;
+}
+
+.offer-card.pending {
+  border-left: 4px solid #d8ad47;
+}
+
+.offer-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.offer-entity-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.offer-type-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.offer-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #164735;
+  margin: 0;
+}
+
+.offer-counterpart-id {
+  font-size: 12px;
+  font-family: monospace;
+  color: #607267;
+}
+
+.offer-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  background-color: #f8faf7;
+  border: 1px solid #edf5ed;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-label {
+  font-size: 11px;
+  color: #607267;
+}
+
+.meta-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #182820;
+}
+
+.meta-value.highlight {
+  color: #d8ad47;
+}
+
+.meta-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #246b45;
+  text-decoration: none;
+}
+
+.meta-link:hover {
+  text-decoration: underline;
+}
+
+/* Offer Accepted Banner */
+.offer-accepted-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #def7ec;
+  border: 1px solid #bcf0da;
+  color: #03543f;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* Offer Action Buttons */
+.offer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.offer-btn {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.offer-btn.primary {
+  background-color: #246b45;
+  color: #ffffff;
+}
+
+.offer-btn.primary:hover:not(:disabled) {
+  background-color: #164735;
+}
+
+.offer-btn.chat-btn {
+  background-color: #164735;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(22, 71, 53, 0.25);
+}
+
+.offer-btn.chat-btn:hover {
+  background-color: #0e3023;
+}
+
+.offer-btn.secondary {
+  background-color: #edf5ed;
+  color: #164735;
+  border: 1px solid #b9cbbd;
+}
+
+.offer-btn.secondary:hover {
+  background-color: #dce6dd;
+}
+
+.offer-waiting-text {
+  font-size: 13px;
+  color: #607267;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ─── Offer Card Status Themes & Counter-Offer Price ─────────────── */
+
+.offer-card.rejected {
+  border-left: 4px solid #a83939;
+  opacity: 0.95;
+}
+
+.offer-card.cancelled {
+  border-left: 4px solid #8b9d90;
+  opacity: 0.88;
+}
+
+.status-pill.status-pending {
+  background-color: #fef8ec;
+  color: #b07d12;
+  border: 1px solid #fae6b8;
+}
+
+.status-pill.status-rejected {
+  background-color: #fdf2f2;
+  color: #a83939;
+  border: 1px solid #f3c8c8;
+}
+
+.status-pill.status-cancelled {
+  background-color: #f3f6f1;
+  color: #607267;
+  border: 1px solid #dce6dd;
+}
+
+/* Offered Price Highlight Banner */
+.offer-price-highlight-banner {
+  background: #fcfdfb;
+  border: 1px solid #dce6dd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.price-tag-group,
+.deposit-tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.highlight-label {
+  font-size: 11.5px;
+  color: #607267;
+}
+
+.highlight-price {
+  font-size: 18px;
+  font-weight: 750;
+  color: #d8ad47;
+}
+
+.highlight-deposit {
+  font-size: 14px;
+  font-weight: 600;
+  color: #164735;
+}
+
+/* Status alerts in Offer Card */
+.offer-status-alert {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.offer-status-alert.rejected {
+  background-color: #fdf2f2;
+  border: 1px solid #f3c8c8;
+  color: #a83939;
+}
+
+.offer-status-alert.cancelled {
+  background-color: #f3f6f1;
+  border: 1px solid #dce6dd;
+  color: #607267;
+}
+
+.offer-btn.reject-btn {
+  background-color: #fdf2f2;
+  color: #a83939;
+  border: 1px solid #f3c8c8;
+}
+
+.offer-btn.reject-btn:hover:not(:disabled) {
+  background-color: #fae4e4;
+}
+
+.offer-btn.cancel-btn {
+  background-color: #f3f6f1;
+  color: #607267;
+  border: 1px solid #dce6dd;
+}
+
+.offer-btn.cancel-btn:hover:not(:disabled) {
+  background-color: #e5ebe5;
+  color: #182820;
+}
+
+.offer-btn.reoffer-btn {
+  background-color: #246b45;
+  color: #ffffff;
+}
+
+/* Quick Offer Modal Price Section */
+.offer-price-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8faf7;
+  border: 1px solid #dce6dd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.price-feedback-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+
+.preview-tag {
+  color: #164735;
+}
+
+.diff-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.diff-badge.equal {
+  background-color: #edf5ed;
+  color: #246b45;
+  border: 1px solid #b9cbbd;
+}
+
+.diff-badge.higher {
+  background-color: #def7ec;
+  color: #03543f;
+  border: 1px solid #bcf0da;
+}
+
+.diff-badge.lower {
+  background-color: #fef8ec;
+  color: #b07d12;
+  border: 1px solid #fae6b8;
+}
+
+.recap-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.recap-price-label {
+  font-size: 11px;
+  color: #607267;
+}
+
+.summary-highlight {
+  color: #d8ad47;
+  font-size: 15px;
+}

@@ -1,0 +1,124 @@
+.farm-page {
+  max-width: 1000px;
+  margin: auto;
+  color: #19382a;
+}
+.farm-kicker {
+  color: #54816a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.farm-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.farm-heading h1 {
+  font-size: clamp(28px, 4vw, 38px);
+  margin: 8px 0;
+}
+.farm-heading p,
+.farm-card p {
+  color: #60746a;
+  line-height: 1.6;
+}
+.farm-notice {
+  background: #fff5dd;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: #6c571f;
+}
+.farm-card {
+  margin-top: 16px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #dce9df;
+  background: white;
+}
+.farm-card h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+.farm-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.farm-selector label,
+.farm-form label,
+.farm-selector div {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.farm-selector small,
+.farm-entries small {
+  color: #6e8277;
+  display: block;
+  margin-top: 5px;
+  font-weight: 400;
+}
+.farm-page input,
+.farm-page select {
+  width: 100%;
+  border: 1px solid #c9dbcf;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  background: white;
+}
+.farm-form {
+  display: grid;
+  gap: 16px;
+}
+.farm-primary {
+  background: #246b45;
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+.farm-primary:hover {
+  background: #164735;
+}
+.farm-page :focus-visible {
+  outline: 3px solid #d9ad4b;
+  outline-offset: 2px;
+}
+.farm-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.farm-links a {
+  color: #246b45;
+  font-weight: 600;
+}
+.farm-entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.farm-entries li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid #e6eee8;
+}
+@media (max-width: 600px) {
+  .farm-selector {
+    grid-template-columns: 1fr;
+  }
+  .farm-card {
+    padding: 18px;
+  }
+}

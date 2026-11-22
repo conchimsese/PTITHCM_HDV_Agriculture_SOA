@@ -1,0 +1,9 @@
+node_modules
+dist
+.expo
+package-lock.json
+coverage
+reference
+.artifacts
+test-results
+playwright-report

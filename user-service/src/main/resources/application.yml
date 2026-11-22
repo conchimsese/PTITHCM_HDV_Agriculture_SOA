@@ -1,0 +1,133 @@
+server:
+  port: ${SERVER_PORT:8081}
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  application:
+    name: user-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      connection-timeout: 500
+      validation-timeout: 250
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  jdbc:
+    template:
+      query-timeout: 1s
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    clean-disabled: true
+    baseline-on-migrate: false
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.block.ms: 3000
+        request.timeout.ms: 3000
+        delivery.timeout.ms: 5000
+        linger.ms: 0
+    listener:
+      auto-startup: false
+    admin:
+      auto-create: false
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      mail.smtp.starttls.required: ${MAIL_STARTTLS:true}
+      mail.smtp.ssl.checkserveridentity: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+      mail.debug: false
+  task:
+    scheduling:
+      pool:
+        size: 2
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+  health:
+    mail:
+      enabled: false
+    readinessstate:
+      enabled: true
+user:
+  reputation:
+    enabled: ${REPUTATION_CONSUMER_ENABLED:false}
+    replay-enabled: ${REPUTATION_REPLAY_ENABLED:false}
+    replay-file: ${REPUTATION_REPLAY_FILE:}
+  outbox:
+    kafka-enabled: ${OUTBOX_KAFKA_ENABLED:false}
+    email-enabled: ${OUTBOX_EMAIL_ENABLED:false}
+    bootstrap-enabled: ${PROFILE_BOOTSTRAP_ENABLED:false}
+    support-email: ${SUPPORT_EMAIL:}
+  media:
+    storage-dir: ${MEDIA_STORAGE_DIR:./local-data/media}
+  auth:
+    enabled: ${AUTH_ENABLED:true}
+    otp-hmac-secret: ${OTP_HMAC_SECRET:}
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:}
+    key-id: ${JWT_KEY_ID:}
+    previous-key-id: ${JWT_PREVIOUS_KEY_ID:}
+    previous-public-key-path: ${JWT_PREVIOUS_PUBLIC_KEY_PATH:}
+    mail-from: ${MAIL_FROM:}
+    seed-enabled: ${ADMIN_SEED_ENABLED:false}
+    admins:
+      - username: ${ADMIN_1_USERNAME:}
+        email: ${ADMIN_1_EMAIL:}
+        password: ${ADMIN_1_PASSWORD:}
+      - username: ${ADMIN_2_USERNAME:}
+        email: ${ADMIN_2_EMAIL:}
+        password: ${ADMIN_2_PASSWORD:}
+  internal:
+    # Each configured caller is allowed ONLY GET access-state. Empty = disabled.
+    keys:
+      gateway: ${INTERNAL_GATEWAY_KEY:}
+      farming: ${INTERNAL_FARMING_KEY:}
+      trading: ${INTERNAL_TRADING_KEY:}
+      chat: ${INTERNAL_CHAT_KEY:}
+      payment: ${INTERNAL_PAYMENT_KEY:}
+      notification: ${INTERNAL_NOTIFICATION_KEY:}

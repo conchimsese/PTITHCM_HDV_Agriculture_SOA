@@ -1,0 +1,67 @@
+services:
+  notification-db:
+    image: postgres:16-alpine
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_app
+      POSTGRES_PASSWORD: notification_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification_app -d notification_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  notification-kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: notification-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://notification-kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@notification-kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      notification-kafka:
+        condition: service_started
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      DB_USERNAME: notification_app
+      DB_PASSWORD: notification_password
+      KAFKA_BOOTSTRAP_SERVERS: notification-kafka:29092
+      KAFKA_CONSUMER_GROUP: notification-service-v1
+      JWT_PUBLIC_KEY_LOCATION: classpath:jwt/public.pem
+      JWT_ISSUER: urn:soa:user-service
+      JWT_AUDIENCE: soa-api
+      USER_SERVICE_BASE_URL: http://user-service:8081
+      INTERNAL_SERVICE_KEY: notification-secret-key
+      NOTIFICATION_RETENTION_DAYS: 90
+
+volumes:
+  notification_db_data:
