@@ -37,26 +37,66 @@ SOA/
 
 ---
 
-## 3. Chuẩn bị cấu hình (chỉ cần làm 1 lần trên máy mới)
+## 3. Cài đặt & Chuẩn bị cấu hình (máy mới)
 
-1. **Khóa JWT (RSA):**
-   - Đảm bảo có cặp khóa `private.pem` và `public.pem` tại `user-service/secrets/local-auth/`.
-   - Đảm bảo có bản sao `public.pem` đặt theo `JWT_KEY_ID` tại `PTITHCM_HDV_Agriculture_FE/infra/keys/local-2026-10-18.pem` (cho Chat & Payment).
+### 3.1. Clone repository
 
-2. **File môi trường hạ tầng (`infra/.env`):**
-   - Nếu chưa có `PTITHCM_HDV_Agriculture_FE/infra/.env`, copy từ `PTITHCM_HDV_Agriculture_FE/infra/.env.example`:
-     ```powershell
-     Copy-Item PTITHCM_HDV_Agriculture_FE/infra/.env.example PTITHCM_HDV_Agriculture_FE/infra/.env
-     ```
-   - Điền mật khẩu DB, các `INTERNAL_*_KEY` (**bắt buộc khác nhau từng service và dài tối thiểu 32 byte**), `OTP_HMAC_SECRET` (>= 32 byte) và `JWT_PUBLIC_KEYS_JSON` (nội dung `public.pem` dạng 1 dòng cho API Gateway).
+```powershell
+git clone https://github.com/conchimsese/PTITHCM_HDV_Agriculture_SOA.git
+cd PTITHCM_HDV_Agriculture_SOA
+```
 
-3. **File môi trường Frontend (`apps/web/.env`):**
-   - Tạo `PTITHCM_HDV_Agriculture_FE/frontend-standard/apps/web/.env` (copy từ `.env.example`):
-     ```env
-     VITE_GATEWAY_URL=http://localhost:8080
-     VITE_GOOGLE_CLIENT_ID=
-     VITE_GOOGLE_LOGIN_PATH=
-     ```
+### 3.2. Tạo khóa RSA cho JWT (bắt buộc vì thư mục `secrets/` và `keys/` không được push lên Git)
+
+Nếu máy đã có `openssl` (Git Bash / WSL / OpenSSL):
+
+```bash
+mkdir -p user-service/secrets/local-auth PTITHCM_HDV_Agriculture_FE/infra/keys
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out user-service/secrets/local-auth/private.pem
+openssl rsa -pubout -in user-service/secrets/local-auth/private.pem -out user-service/secrets/local-auth/public.pem
+cp user-service/secrets/local-auth/public.pem PTITHCM_HDV_Agriculture_FE/infra/keys/local-2026-10-18.pem
+```
+
+*(Hoặc trên PowerShell nếu không cài OpenSSL, có thể dùng Node.js có sẵn để sinh nhanh 2 file khóa:)*
+
+```powershell
+New-Item -ItemType Directory -Force user-service/secrets/local-auth, PTITHCM_HDV_Agriculture_FE/infra/keys | Out-Null
+node -e "const c=require('crypto'),fs=require('fs');const {privateKey,publicKey}=c.generateKeyPairSync('rsa',{modulusLength:2048,publicKeyEncoding:{type:'spki',format:'pem'},privateKeyEncoding:{type:'pkcs8',format:'pem'}});fs.writeFileSync('user-service/secrets/local-auth/private.pem',privateKey);fs.writeFileSync('user-service/secrets/local-auth/public.pem',publicKey);fs.writeFileSync('PTITHCM_HDV_Agriculture_FE/infra/keys/local-2026-10-18.pem',publicKey);"
+```
+
+Lệnh in chuỗi `JWT_PUBLIC_KEYS_JSON` dạng 1 dòng để dán vào `infra/.env`:
+
+```powershell
+$pem = (Get-Content -Raw user-service/secrets/local-auth/public.pem).Trim() -replace "`r?`n", "\n"
+Write-Output "JWT_PUBLIC_KEYS_JSON={`"local-2026-10-18`":`"$pem\n`"}"
+```
+
+### 3.3. Tạo `package-lock.json` cho `trading-service-soa`
+
+Vì `trading-service-soa/Dockerfile` dùng `npm ci` nhưng `package-lock.json` nằm trong `.gitignore`, chạy lệnh sau trước khi build Docker:
+
+```powershell
+npm --prefix trading-service-soa install --package-lock-only
+```
+
+### 3.4. Tạo các file `.env`
+
+1. **File môi trường hạ tầng (`infra/.env`):**
+   ```powershell
+   Copy-Item PTITHCM_HDV_Agriculture_FE/infra/.env.example PTITHCM_HDV_Agriculture_FE/infra/.env
+   ```
+   Mở `PTITHCM_HDV_Agriculture_FE/infra/.env` và điền:
+   - Mật khẩu DB (`*_DB_PASSWORD`).
+   - Toàn bộ `INTERNAL_*_KEY` (**bắt buộc khác nhau từng service và dài tối thiểu 32 byte**) và `OTP_HMAC_SECRET` (>= 32 byte).
+   - `JWT_PUBLIC_KEYS_JSON` lấy từ bước 3.2 ở trên.
+
+2. **File môi trường Frontend (`apps/web/.env`):**
+   Tạo `PTITHCM_HDV_Agriculture_FE/frontend-standard/apps/web/.env` với nội dung:
+   ```env
+   VITE_GATEWAY_URL=http://localhost:8080
+   VITE_GOOGLE_CLIENT_ID=
+   VITE_GOOGLE_LOGIN_PATH=
+   ```
 
 ---
 
