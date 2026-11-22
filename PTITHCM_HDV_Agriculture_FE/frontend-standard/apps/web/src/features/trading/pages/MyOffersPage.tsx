@@ -4,29 +4,52 @@ import type { OfferDTO, OfferStatus } from '@agri/contracts';
 import { useSession } from '../../../shared/hooks/useAuth';
 import { formatVND } from '../../../shared/utils/formatters';
 import { OfferCard } from '../components/OfferCard';
-import { useCancelOffer, useOffers } from '../hooks/useOffers';
+import { useAcceptOffer, useCancelOffer, useOffers, useRejectOffer } from '../hooks/useOffers';
 import './trading.css';
 
 export function MyOffersPage() {
   const session = useSession();
+  const isFarmer = session?.role === 'FARMER';
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<OfferStatus | ''>('');
   const [cancelOfferConfirm, setCancelOfferConfirm] = useState<OfferDTO | null>(null);
+  const [acceptOfferConfirm, setAcceptOfferConfirm] = useState<OfferDTO | null>(null);
+  const [rejectOfferConfirm, setRejectOfferConfirm] = useState<OfferDTO | null>(null);
 
   const { data, isLoading, isError, error, refetch, isFetching } = useOffers({
-    traderId: session?.accountId,
+    ...(isFarmer ? { farmerId: session?.accountId } : { traderId: session?.accountId }),
     status: statusFilter ? statusFilter : undefined,
     page,
     size: 10,
   });
 
   const cancelMutation = useCancelOffer();
+  const acceptMutation = useAcceptOffer();
+  const rejectMutation = useRejectOffer();
 
   const handleConfirmCancel = () => {
     if (!cancelOfferConfirm) return;
     cancelMutation.mutate(cancelOfferConfirm.offerId, {
       onSuccess: () => {
         setCancelOfferConfirm(null);
+      },
+    });
+  };
+
+  const handleConfirmAccept = () => {
+    if (!acceptOfferConfirm) return;
+    acceptMutation.mutate(acceptOfferConfirm.offerId, {
+      onSuccess: () => {
+        setAcceptOfferConfirm(null);
+      },
+    });
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectOfferConfirm) return;
+    rejectMutation.mutate(rejectOfferConfirm.offerId, {
+      onSuccess: () => {
+        setRejectOfferConfirm(null);
       },
     });
   };
@@ -44,13 +67,15 @@ export function MyOffersPage() {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h1>Báo giá của tôi</h1>
+          <h1>{isFarmer ? 'Báo giá đã nhận' : 'Báo giá của tôi'}</h1>
           <p className="page-subtitle">
-            Theo dõi tình trạng các đề xuất thu mua bạn đã gửi tới nông dân trên sàn thị trường
+            {isFarmer
+              ? 'Xem xét, chấp nhận hoặc từ chối các đề xuất thu mua từ thương lái cho bài đăng của bạn'
+              : 'Theo dõi tình trạng các đề xuất thu mua bạn đã gửi tới nông dân trên sàn thị trường'}
           </p>
         </div>
-        <Link to="/thi-truong" className="header-action-btn secondary">
-          🛒 Khám phá thị trường lúa
+        <Link to={isFarmer ? '/bai-dang' : '/thi-truong'} className="header-action-btn secondary">
+          {isFarmer ? '🌾 Quản lý bài đăng bán lúa' : '🛒 Khám phá thị trường lúa'}
         </Link>
       </div>
 
@@ -61,7 +86,9 @@ export function MyOffersPage() {
             📋
           </span>
           <div className="metric-content">
-            <span className="metric-label">Tổng báo giá đã gửi</span>
+            <span className="metric-label">
+              {isFarmer ? 'Tổng báo giá đã nhận' : 'Tổng báo giá đã gửi'}
+            </span>
             <span className="metric-value">{totalElements}</span>
           </div>
         </div>
@@ -71,7 +98,9 @@ export function MyOffersPage() {
             ⏳
           </span>
           <div className="metric-content">
-            <span className="metric-label">Đang chờ phản hồi</span>
+            <span className="metric-label">
+              {isFarmer ? 'Đang chờ bạn duyệt' : 'Đang chờ phản hồi'}
+            </span>
             <span className="metric-value open">{pendingCount}</span>
           </div>
         </div>
@@ -166,11 +195,16 @@ export function MyOffersPage() {
           </span>
           <h3>Bạn chưa có báo giá nào {statusFilter ? `ở trạng thái ${statusFilter}` : ''}</h3>
           <p>
-            Tìm kiếm các sản phẩm lúa chất lượng trên sàn thị trường và gửi báo giá để bắt đầu kết
-            nối với nhà nông.
+            {isFarmer
+              ? 'Khi thương lái gửi báo giá cho bài đăng bán lúa của bạn, thông tin sẽ hiển thị tại đây.'
+              : 'Tìm kiếm các sản phẩm lúa chất lượng trên sàn thị trường và gửi báo giá để bắt đầu kết nối với nhà nông.'}
           </p>
-          <Link to="/thi-truong" className="primary-button" style={{ marginTop: '12px' }}>
-            🛒 Đến sàn thị trường lúa ngay
+          <Link
+            to={isFarmer ? '/bai-dang' : '/thi-truong'}
+            className="primary-button"
+            style={{ marginTop: '12px' }}
+          >
+            {isFarmer ? '🌾 Xem bài đăng của tôi' : '🛒 Đến sàn thị trường lúa ngay'}
           </Link>
         </div>
       ) : (
@@ -179,8 +213,12 @@ export function MyOffersPage() {
             <OfferCard
               key={offer.offerId}
               offer={offer}
-              isFarmerView={false}
-              onCancel={(item) => setCancelOfferConfirm(item)}
+              isFarmerView={isFarmer}
+              onAccept={isFarmer ? (item) => setAcceptOfferConfirm(item) : undefined}
+              onReject={isFarmer ? (item) => setRejectOfferConfirm(item) : undefined}
+              onCancel={!isFarmer ? (item) => setCancelOfferConfirm(item) : undefined}
+              isAccepting={acceptMutation.isPending && acceptMutation.variables === offer.offerId}
+              isRejecting={rejectMutation.isPending && rejectMutation.variables === offer.offerId}
               isCancelling={cancelMutation.isPending && cancelMutation.variables === offer.offerId}
             />
           ))}
@@ -275,6 +313,128 @@ export function MyOffersPage() {
                 className="modal-btn secondary"
                 disabled={cancelMutation.isPending}
                 onClick={() => setCancelOfferConfirm(null)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Farmer Accept Offer Confirmation Modal */}
+      {acceptOfferConfirm && (
+        <div
+          className="modal-backdrop"
+          onClick={() => !acceptMutation.isPending && setAcceptOfferConfirm(null)}
+          aria-hidden="true"
+        >
+          <div
+            className="modal-container"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="my-accept-modal-title"
+          >
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setAcceptOfferConfirm(null)}
+              disabled={acceptMutation.isPending}
+              aria-label="Đóng"
+            >
+              ✕
+            </button>
+            <div className="modal-header">
+              <div>
+                <h3 id="my-accept-modal-title">Chấp nhận báo giá này?</h3>
+                <p className="modal-desc">
+                  Mức giá đề xuất: <strong>{formatVND(acceptOfferConfirm.offeredPrice)}</strong>
+                </p>
+              </div>
+            </div>
+            {acceptMutation.isError && (
+              <div className="alert alert-error" role="alert">
+                {acceptMutation.error.message || 'Có lỗi xảy ra khi chấp nhận báo giá.'}
+              </div>
+            )}
+            <div className="modal-body-note">
+              <p style={{ margin: 0, fontSize: '13.5px', color: '#526459', lineHeight: 1.5 }}>
+                Hệ thống sẽ mở kênh nhắn tin giữa bạn và thương lái để thống nhất điều khoản hợp
+                đồng và đặt cọc mô phỏng.
+              </p>
+            </div>
+            <div className="modal-footer-actions">
+              <button
+                type="button"
+                className="modal-btn primary"
+                disabled={acceptMutation.isPending}
+                onClick={handleConfirmAccept}
+              >
+                {acceptMutation.isPending ? 'Đang xử lý…' : 'Xác nhận chấp nhận'}
+              </button>
+              <button
+                type="button"
+                className="modal-btn secondary"
+                disabled={acceptMutation.isPending}
+                onClick={() => setAcceptOfferConfirm(null)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Farmer Reject Offer Confirmation Modal */}
+      {rejectOfferConfirm && (
+        <div
+          className="modal-backdrop"
+          onClick={() => !rejectMutation.isPending && setRejectOfferConfirm(null)}
+          aria-hidden="true"
+        >
+          <div
+            className="modal-container"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="my-reject-modal-title"
+          >
+            <button
+              type="button"
+              className="modal-close-btn"
+              onClick={() => setRejectOfferConfirm(null)}
+              disabled={rejectMutation.isPending}
+              aria-label="Đóng"
+            >
+              ✕
+            </button>
+            <div className="modal-header">
+              <div>
+                <h3 id="my-reject-modal-title">Từ chối báo giá này?</h3>
+                <p className="modal-desc">
+                  Mức giá đề xuất: <strong>{formatVND(rejectOfferConfirm.offeredPrice)}</strong>
+                </p>
+              </div>
+            </div>
+            {rejectMutation.isError && (
+              <div className="alert alert-error" role="alert">
+                {rejectMutation.error.message || 'Có lỗi xảy ra khi từ chối báo giá.'}
+              </div>
+            )}
+            <div className="modal-footer-actions">
+              <button
+                type="button"
+                className="modal-btn danger"
+                disabled={rejectMutation.isPending}
+                onClick={handleConfirmReject}
+              >
+                {rejectMutation.isPending ? 'Đang từ chối…' : 'Xác nhận từ chối'}
+              </button>
+              <button
+                type="button"
+                className="modal-btn secondary"
+                disabled={rejectMutation.isPending}
+                onClick={() => setRejectOfferConfirm(null)}
               >
                 Đóng
               </button>

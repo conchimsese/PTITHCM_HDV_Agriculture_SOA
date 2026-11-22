@@ -26,6 +26,7 @@ export function useAcceptOffer() {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       queryClient.invalidateQueries({ queryKey: ['listing'] });
+      queryClient.invalidateQueries({ queryKey: ['chat'] });
     },
   });
 }

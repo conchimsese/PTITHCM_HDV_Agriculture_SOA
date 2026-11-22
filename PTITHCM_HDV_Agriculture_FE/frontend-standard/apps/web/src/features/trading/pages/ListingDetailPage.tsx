@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getRiceArtwork } from '../utils/riceArtwork';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useSession } from '../../../shared/hooks/useAuth';
 import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
@@ -120,8 +121,8 @@ export function ListingDetailPage() {
           </div>
         </div>
 
-        {/* Produce Photos Gallery */}
-        {listing.images && listing.images.length > 0 && (
+        {/* Produce Photos Gallery or V5 Variety Illustration */}
+        {listing.images && listing.images.length > 0 ? (
           <div className="detail-gallery">
             <div className="gallery-main-view">
               <img
@@ -150,6 +151,11 @@ export function ListingDetailPage() {
               </div>
             )}
           </div>
+        ) : (
+          <figure className="feed-illustration" style={{ marginBottom: '20px' }}>
+            <img src={getRiceArtwork(listing.seedType).src} alt={listing.seedType} />
+            <figcaption>{getRiceArtwork(listing.seedType).label}</figcaption>
+          </figure>
         )}
 
         {/* Price & Primary CTA Banner */}

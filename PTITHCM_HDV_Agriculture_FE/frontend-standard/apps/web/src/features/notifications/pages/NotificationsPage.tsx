@@ -213,11 +213,26 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
                 Đã đánh dấu thông báo đã đọc.
               </p>
             )}
-            {item.referenceType === 'ACCOUNT' && (
-              <Link className="notification-account-link" to="/tai-khoan">
-                Xem tài khoản của tôi →
-              </Link>
-            )}
+            {(() => {
+              const target =
+                item.referenceType === 'ACCOUNT'
+                  ? { to: '/tai-khoan', label: 'Xem tài khoản của tôi →' }
+                  : item.referenceType === 'CONVERSATION'
+                    ? { to: `/chat/${item.referenceId}`, label: 'Mở cuộc trò chuyện →' }
+                    : item.referenceType === 'CONTRACT' || item.referenceType === 'DEPOSIT'
+                      ? {
+                          to: `/payments/contracts/${item.referenceId}`,
+                          label: 'Xem hợp đồng & cọc →',
+                        }
+                      : item.referenceType === 'OFFER'
+                        ? { to: '/bao-gia', label: 'Xem báo giá →' }
+                        : null;
+              return target ? (
+                <Link className="notification-account-link" to={target.to}>
+                  {target.label}
+                </Link>
+              ) : null;
+            })()}
           </article>
         )
       )}

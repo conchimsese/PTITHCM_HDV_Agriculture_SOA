@@ -584,12 +584,25 @@ fieldset {
 
 /* ─── Demo Mode Quick Access ────────────────────────────────────── */
 .demo-login-box {
-  margin-top: 24px;
-  padding-top: 18px;
-  border-top: 1px dashed #dce6dd;
+  margin-top: 22px;
+  padding: 14px;
+  border: 1px dashed #b9cbbd;
+  border-radius: 12px;
+  background: #f8faf7;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.demo-login-summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #164735;
 }
 
 .demo-login-divider {
@@ -609,22 +622,23 @@ fieldset {
 }
 
 .demo-login-hint {
-  font-size: 12.5px;
-  color: #607267;
-  text-align: center;
-  margin: 0;
-  line-height: 1.4;
+  font-size: 13px;
+  color: #526459;
+  text-align: left;
+  margin: 8px 0 0;
+  line-height: 1.5;
 }
 
 .demo-login-buttons {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .demo-role-btn {
-  height: 40px;
+  min-height: 44px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -633,7 +647,7 @@ fieldset {
   font-weight: 600;
   cursor: pointer;
   border: 1px solid #b9cbbd;
-  background-color: #f8faf7;
+  background-color: #ffffff;
   color: #164735;
   transition: all 0.15s;
 }
@@ -649,4 +663,18 @@ fieldset {
 
 .demo-role-btn.trader {
   border-left: 4px solid #d8ad47;
+}
+
+.text-button,
+.password-input button,
+.auth-tabs a {
+  min-height: 44px;
+  min-width: 48px;
+}
+
+.auth-switch a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 4px 6px;
 }

@@ -265,13 +265,13 @@
 
 .status-pill.status-locked {
   background-color: #fef8ec;
-  color: #b07d12;
+  color: #885b17;
   border: 1px solid #fae6b8;
 }
 
 .status-pill.status-sold {
   background-color: #f3f6f1;
-  color: #607267;
+  color: #526459;
   border: 1px solid #dce6dd;
 }
 
@@ -326,7 +326,7 @@
 .price-value {
   font-size: 20px;
   font-weight: 750;
-  color: #d8ad47;
+  color: #885b17;
   letter-spacing: -0.3px;
 }
 
@@ -373,7 +373,7 @@
 
 .card-btn {
   flex: 1;
-  height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -755,31 +755,39 @@
 
 .status-badge.pending {
   background-color: #fef8ec;
-  color: #b07d12;
+  color: #885b17;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* ─── Responsive Media Queries ───────────────────────────────────── */
 
 @media (max-width: 992px) {
   .filters-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 }
 
 @media (max-width: 600px) {
   .listings-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gps-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-actions {
+    flex-direction: column;
   }
 }
 
 .marketplace-page {
   width: min(100%, 860px);
   margin-inline: auto;
+  min-width: 0;
 }
 .marketplace-page .listings-grid {
   grid-template-columns: minmax(0, 1fr);
@@ -788,6 +796,19 @@
   cursor: pointer;
   color: #164735;
   font-weight: 650;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.marketplace-filters-panel button,
+.marketplace-filters-panel input,
+.marketplace-filters-panel select,
+.card-btn,
+.page-nav-btn,
+.retry-btn,
+.reset-filters-btn,
+.modal-btn {
+  min-height: 44px;
 }
 .marketplace-filters-panel[open] summary {
   margin-bottom: 16px;

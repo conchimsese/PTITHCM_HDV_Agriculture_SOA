@@ -41,39 +41,26 @@ export function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Auth Routes */}
-          <Route path="/thong-bao" element={<NotificationsPage />} />
-          <Route path="/thong-bao/:notificationId" element={<NotificationsPage />} />
-          <Route element={<ServiceLayout />}>
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/chat/:conversationId" element={<ChatPage />} />
-            <Route path="/payments" element={<PaymentsPage />} />
-            <Route path="/payments/new" element={<CreateContractPage />} />
-            <Route path="/payments/contracts/:contractId" element={<ContractPage />} />
-            <Route path="/payments/disputes/:disputeId" element={<DisputePage />} />
-          </Route>
           <Route path="/xac-minh-email" element={<VerifyEmailPage />} />
-          <Route path="/tai-khoan" element={<ProfilePage />} />
-          <Route path="/nguoi-dung/:accountId" element={<PublicProfilePage />} />
-          <Route path="/quan-ly-tai-khoan" element={<AccountsPage />} />
           <Route path="/demo" element={<Navigate to="/" replace />} />
           <Route path="/dang-nhap" element={<AuthPage mode="login" />} />
           <Route path="/dang-ky" element={<AuthPage mode="register" />} />
 
-          {/* Protected Application Shell */}
+          {/* Unified V5 Application Shell */}
           <Route element={<WebLayout />}>
             <Route index element={<RootRedirect />} />
 
-            {/* Trader / Admin Routes */}
+            {/* Trader & Admin Marketplace */}
             <Route element={<RoleGuard allowedRoles={['TRADER', 'ADMIN']} />}>
               <Route path="/thi-truong" element={<MarketplacePage />} />
             </Route>
 
-            {/* Trader Offers */}
-            <Route element={<RoleGuard allowedRoles={['TRADER']} />}>
+            {/* Trader & Farmer Offers */}
+            <Route element={<RoleGuard allowedRoles={['FARMER', 'TRADER']} />}>
               <Route path="/bao-gia" element={<MyOffersPage />} />
             </Route>
 
-            {/* Farmer Routes */}
+            {/* Farmer Workspace */}
             <Route element={<RoleGuard allowedRoles={['FARMER']} />}>
               <Route path="/ruong-vu" element={<FarmingPage page="plots" />} />
               <Route path="/nhat-ky" element={<FarmingPage page="journal" />} />
@@ -83,9 +70,34 @@ export function App() {
               <Route path="/bai-dang/:listingId/bao-gia" element={<ListingOffersPage />} />
             </Route>
 
-            {/* Shared Listing Detail Route (All Authenticated Roles) */}
+            {/* Admin Workspace */}
+            <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
+              <Route path="/quan-ly-tai-khoan" element={<AccountsPage />} />
+            </Route>
+
+            {/* Chat & Payments Inside Unified Shell */}
+            <Route element={<ServiceLayout />}>
+              <Route element={<RoleGuard allowedRoles={['FARMER', 'TRADER']} />}>
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/chat/:conversationId" element={<ChatPage />} />
+              </Route>
+              <Route element={<RoleGuard allowedRoles={['TRADER']} />}>
+                <Route path="/payments/new" element={<CreateContractPage />} />
+              </Route>
+              <Route element={<RoleGuard allowedRoles={['FARMER', 'TRADER', 'ADMIN']} />}>
+                <Route path="/payments" element={<PaymentsPage />} />
+                <Route path="/payments/contracts/:contractId" element={<ContractPage />} />
+                <Route path="/payments/disputes/:disputeId" element={<DisputePage />} />
+              </Route>
+            </Route>
+
+            {/* Shared Authenticated Routes */}
             <Route element={<RoleGuard allowedRoles={['FARMER', 'TRADER', 'ADMIN']} />}>
               <Route path="/bai-dang/:listingId" element={<ListingDetailPage />} />
+              <Route path="/thong-bao" element={<NotificationsPage />} />
+              <Route path="/thong-bao/:notificationId" element={<NotificationsPage />} />
+              <Route path="/tai-khoan" element={<ProfilePage />} />
+              <Route path="/nguoi-dung/:accountId" element={<PublicProfilePage />} />
             </Route>
           </Route>
 

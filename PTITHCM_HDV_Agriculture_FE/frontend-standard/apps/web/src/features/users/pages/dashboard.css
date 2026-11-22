@@ -16,14 +16,14 @@
 }
 .dash-heading p,
 .dash-card p {
-  color: #65776b;
-  line-height: 1.6;
+  color: #526459;
+  line-height: 1.65;
 }
 .dash-kicker {
-  font-size: 11px !important;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #668575 !important;
+  font-size: 12px !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #246b45 !important;
 }
 .dash-badge {
   align-self: flex-start;
@@ -89,7 +89,39 @@
   font-weight: 700;
 }
 .dash-card small {
-  color: #7d8b80;
+  color: #526459;
+  font-size: 12px;
+}
+.season-stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f3f6f1;
+  border: 1px solid #dce6dd;
+}
+.season-stats-row strong {
+  display: block;
+  color: #164735;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.season-links button,
+.season-links a,
+.season-related a,
+.dash-card > a,
+.dash-card button,
+.season-switch select {
+  min-height: 44px;
+}
+.season-links a,
+.season-related a,
+.dash-card > a,
+.dashboard-row a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .dash-footer {
   margin-top: 28px;

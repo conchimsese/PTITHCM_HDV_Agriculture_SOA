@@ -155,7 +155,7 @@ export function MyListingsPage() {
 
                 return (
                   <tr key={item.listingId}>
-                    <td>
+                    <td data-label="Giống lúa">
                       <div className="table-produce-cell">
                         <span className="rice-cell-icon" aria-hidden="true">
                           🌾
@@ -166,16 +166,18 @@ export function MyListingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="price-cell">{formatVND(item.expectedPrice)}</td>
-                    <td>{formatYield(item.estimatedYield)}</td>
-                    <td>{formatArea(item.area)}</td>
-                    <td>
+                    <td className="price-cell" data-label="Giá mong muốn">
+                      {formatVND(item.expectedPrice)}
+                    </td>
+                    <td data-label="Sản lượng">{formatYield(item.estimatedYield)}</td>
+                    <td data-label="Diện tích">{formatArea(item.area)}</td>
+                    <td data-label="Trạng thái">
                       <span className={`status-pill ${s.className}`}>{s.label}</span>
                     </td>
-                    <td className="coords-cell">
+                    <td className="coords-cell" data-label="Tọa độ">
                       {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
                     </td>
-                    <td className="align-right">
+                    <td className="align-right" data-label="Thao tác">
                       <div className="table-actions">
                         <Link to={`/bai-dang/${item.listingId}`} className="table-btn view">
                           Chi tiết

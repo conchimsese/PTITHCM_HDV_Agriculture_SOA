@@ -1,6 +1,7 @@
-import riceIllustration from '../../../workspace/assets/rice_st25.svg';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ListingDTO } from '@agri/contracts';
+import { getRiceArtwork } from '../utils/riceArtwork';
 import {
   formatArea,
   formatDistance,
@@ -47,6 +48,10 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
     className: '',
   };
 
+  const [imageBroken, setImageBroken] = useState(false);
+  const artwork = getRiceArtwork(listing.seedType);
+  const hasUploadedImage = Boolean(listing.images?.length) && !imageBroken;
+
   return (
     <article className="listing-card">
       <div className="card-top">
@@ -62,13 +67,13 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
         <span className={`status-pill ${currentStatus.className}`}>{currentStatus.label}</span>
       </div>
 
-      {listing.images?.length ? (
+      {hasUploadedImage ? (
         <div className="card-produce-media">
           <img
             src={listing.images[0]}
             alt={listing.seedType}
             className="card-produce-img"
-            loading="lazy"
+            onError={() => setImageBroken(true)}
           />
           {listing.images.length > 1 && (
             <span className="card-photo-count">📷 {listing.images.length} ảnh</span>
@@ -76,8 +81,8 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
         </div>
       ) : (
         <figure className="feed-illustration">
-          <img src={riceIllustration} alt="" />
-          <figcaption>Minh họa ruộng lúa</figcaption>
+          <img src={artwork.src} alt="" />
+          <figcaption>{artwork.label}</figcaption>
         </figure>
       )}
       <div className="card-price-section">

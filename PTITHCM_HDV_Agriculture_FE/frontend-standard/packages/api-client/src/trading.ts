@@ -67,7 +67,7 @@ export const createTradingApi = (http: ApiClient): TradingApi => ({
     files.forEach((file) => formData.append('images', file));
     const res = await http.request<{ data: UploadImagesResponse }>('/api/v1/listings/upload', {
       method: 'POST',
-      body: formData,
+      formData,
       signal,
       schema: singleResponseSchema(uploadImagesResponseSchema),
     });

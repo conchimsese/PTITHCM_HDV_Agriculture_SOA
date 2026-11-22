@@ -260,5 +260,36 @@ describe('Trading Service Contracts & API Adapters (contract.md v1.0.0)', () => 
         'https://gateway.example.test/api/v1/offers/5f1a329d-ef81-4f1c-99f5-4f7f6a73c091/accept',
       );
     });
+
+    it('uploads images using FormData without JSON Content-Type', async () => {
+      const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+        Response.json(
+          {
+            data: {
+              urls: [
+                'http://localhost:8080/api/v1/listings/media/11111111-1111-4111-8111-111111111111',
+              ],
+              count: 1,
+            },
+          },
+          { status: 200 },
+        ),
+      );
+
+      const api = createTradingApi(
+        createApiClient({
+          baseUrl: 'https://gateway.example.test',
+          getAccessToken: () => 'token',
+          fetchImpl,
+        }),
+      );
+
+      const file = new File(['abc'], 'rice.jpg', { type: 'image/jpeg' });
+      const urls = await api.uploadImages([file]);
+      expect(urls).toHaveLength(1);
+      const init = fetchImpl.mock.calls[0][1];
+      expect(init?.body).toBeInstanceOf(FormData);
+      expect((init?.headers as Record<string, string>)?.['Content-Type']).toBeUndefined();
+    });
   });
 });

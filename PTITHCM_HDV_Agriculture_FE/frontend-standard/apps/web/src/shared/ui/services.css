@@ -1,50 +1,15 @@
 .service-app {
-  font:
-    16px/1.6 Georgia,
-    serif;
+  font: 15px/1.6 var(--v5-font, 'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif);
   color: #182820;
-  background: #f3f6f1;
-  min-height: 100vh;
+  background: transparent;
+  min-width: 0;
 }
 .service-app * {
   box-sizing: border-box;
 }
-.service-app header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 22px 5%;
-  background: #fff;
-  border-bottom: 1px solid #dce6dd;
-}
 .service-app a {
   color: #246b45;
-}
-.service-app nav {
-  display: flex;
-  gap: 24px;
-}
-.brand {
-  font-size: 24px;
-  font-weight: bold;
-  text-decoration: none;
-}
-.brand small {
-  display: block;
-  font: 12px Arial;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-.service-app main {
-  max-width: 1280px;
-  margin: auto;
-  padding: 32px 24px;
-}
-.service-app footer {
-  text-align: center;
-  padding: 24px;
-  color: #607267;
+  font-weight: 500;
 }
 .service-app button,
 .service-app input,
@@ -53,51 +18,91 @@
   font: inherit;
   padding: 10px 14px;
   border: 1px solid #b9cbbd;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .service-app button {
   cursor: pointer;
   background: #246b45;
   color: white;
+  border-color: #246b45;
   min-height: 44px;
+  font-weight: 600;
+}
+.service-app button.secondary {
+  background: #fff;
+  color: #164735;
+  border-color: #c9d8cd;
 }
 .service-app button:disabled {
-  opacity: 0.5;
-  cursor: wait;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .service-app input,
-.service-app textarea {
+.service-app textarea,
+.service-app select {
   background: white;
+  color: #182820;
   width: 100%;
+  min-height: 44px;
 }
 .service-app label {
   display: grid;
   gap: 6px;
-  margin: 12px 0;
+  font-weight: 600;
+  font-size: 14px;
+  color: #182820;
 }
 .service-app :focus-visible {
   outline: 3px solid #d8ad47;
-  outline-offset: 3px;
+  outline-offset: 2px;
+}
+.service-app .muted {
+  color: #526459;
+}
+.service-app .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.service-app .actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid #dce6dd;
+  background: #fff;
+  text-decoration: none;
+}
+.service-app form label {
+  margin: 10px 0;
+}
+.service-app :focus-visible {
+  outline: 3px solid #d8ad47;
+  outline-offset: 2px;
 }
 .service-grid {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 24px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
 }
 .panel {
   background: white;
   border: 1px solid #dce6dd;
   border-radius: 18px;
-  padding: 24px;
-  margin-bottom: 20px;
+  padding: 22px;
+  margin-bottom: 18px;
+  min-width: 0;
 }
 .panel h1,
 .panel h2 {
   margin-top: 0;
+  color: #164735;
 }
 .room-link {
   display: block;
-  padding: 16px 0;
+  padding: 14px 0;
   border-bottom: 1px solid #edf5ed;
 }
 .messages {
@@ -111,7 +116,7 @@
 .bubble {
   max-width: 85%;
   background: #edf5ed;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-radius: 16px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -121,23 +126,43 @@
   background: #164735;
   color: white;
 }
+.bubble.mine a {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
+}
 .bubble small {
   display: block;
-  opacity: 0.7;
-}
-.actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  opacity: 0.85;
+  font-size: 12px;
+  margin-top: 4px;
 }
 .service-app .error {
-  color: #a83939;
-  background: #fff0ee;
-  padding: 12px;
-  border-radius: 8px;
+  color: #8f2d2d;
+  background: #fdf2f2;
+  border: 1px solid #f0d0d0;
+  padding: 12px 14px;
+  border-radius: 12px;
 }
-.muted {
-  color: #607267;
+.service-app .success-banner {
+  color: #164735;
+  background: #edf5ed;
+  border: 1px solid #c9dec9;
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+.service-app .sim-notice {
+  background: #fdf7e6;
+  border: 1px solid #e6cb85;
+  color: #5b3b09;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.service-app .table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
 }
 .service-app img {
   max-width: 100%;
@@ -146,8 +171,12 @@
 }
 .service-app dl {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 12px;
+  grid-template-columns: minmax(120px, 1fr) 2fr;
+  gap: 10px 14px;
+}
+.service-app dt {
+  color: #526459;
+  font-weight: 600;
 }
 .service-app dd {
   margin: 0;
@@ -162,22 +191,23 @@
 }
 .service-app td,
 .service-app th {
-  padding: 12px;
+  padding: 12px 10px;
   text-align: left;
   border-bottom: 1px solid #dce6dd;
 }
 @media (max-width: 720px) {
   .service-grid {
-    grid-template-columns: 1fr;
-  }
-  .service-app header {
-    flex-wrap: wrap;
-  }
-  .service-app main {
-    padding: 20px 12px;
+    grid-template-columns: minmax(0, 1fr);
   }
   .panel {
     padding: 16px;
+  }
+  .service-app dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .service-app dt {
+    margin-top: 8px;
   }
   .service-app table {
     font-size: 13px;
@@ -213,6 +243,10 @@
 }
 .messenger-details {
   overflow-wrap: anywhere;
+}
+.messenger-details .actions a {
+  width: 100%;
+  justify-content: space-between;
 }
 .messenger-back {
   display: none;
@@ -329,5 +363,21 @@
   .messenger .messenger-details {
     border-left: 0;
     border-top: 1px solid #dce6dd;
+  }
+  .messenger-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #edf5ed;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .messenger-thread form {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

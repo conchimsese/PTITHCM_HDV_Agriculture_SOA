@@ -218,7 +218,7 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
                   ? 'Sẵn sàng kết nối!'
                   : register
                     ? 'Bắt đầu mùa vụ mới'
-                    : 'Chào mừng trở lại!'}
+                    : 'Đăng nhập máy chủ'}
           </h2>
           <p className="auth-description">
             {session
@@ -226,18 +226,9 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
               : verificationEmail
                 ? `Nhập mã 6 chữ số được gửi đến ${verificationEmail}. Mã có hiệu lực trong 10 phút.`
                 : register
-                  ? 'Tạo tài khoản để cùng phát triển nông nghiệp Việt.'
-                  : 'Đăng nhập để tiếp tục hành trình cùng Ruộng Lúa Việt.'}
+                  ? 'Tạo tài khoản trên máy chủ để cùng phát triển nông nghiệp Việt.'
+                  : 'Đăng nhập bằng tài khoản đã đăng ký trên hệ thống Ruộng Lúa Việt.'}
           </p>
-          {import.meta.env.DEV &&
-            ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
-            !register &&
-            !verificationEmail && (
-              <div className="alert alert-success" role="note">
-                Chế độ demo trên máy: nongdan.demo / thuonglai.demo / admin.demo, mật khẩu chung{' '}
-                <strong>demo123</strong>. Dữ liệu minh họa, không kết nối tài khoản thật.
-              </div>
-            )}
           {error && (
             <div className="alert alert-error" role="alert">
               {error}
@@ -435,6 +426,52 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
                       {register ? 'Đăng nhập' : 'Đăng ký ngay'}
                     </Link>
                   </p>
+                  {import.meta.env.DEV &&
+                    ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+                    !register && (
+                      <details className="demo-login-box">
+                        <summary className="demo-login-summary">
+                          Xem thử giao diện cục bộ (Demo trình duyệt)
+                        </summary>
+                        <p className="demo-login-hint">
+                          Chỉ dùng dữ liệu giả lập trên trình duyệt, không kết nối hoặc lưu vào máy
+                          chủ thực. Tài khoản demo gõ tay: nongdan.demo / thuonglai.demo /
+                          admin.demo (mật khẩu <strong>demo123</strong>).
+                        </p>
+                        <div className="demo-login-buttons">
+                          <button
+                            type="button"
+                            className="demo-role-btn farmer"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('FARMER'));
+                            }}
+                          >
+                            Mở bản xem thử Nông dân (Demo)
+                          </button>
+                          <button
+                            type="button"
+                            className="demo-role-btn trader"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('TRADER'));
+                            }}
+                          >
+                            Mở bản xem thử Thương lái (Demo)
+                          </button>
+                          <button
+                            type="button"
+                            className="demo-role-btn"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('ADMIN'));
+                            }}
+                          >
+                            Mở bản xem thử Quản trị (Demo)
+                          </button>
+                        </div>
+                      </details>
+                    )}
                 </>
               )}
             </>

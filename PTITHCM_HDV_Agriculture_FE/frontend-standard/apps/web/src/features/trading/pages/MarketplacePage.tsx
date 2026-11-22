@@ -77,8 +77,8 @@ export function MarketplacePage() {
       </div>
 
       {/* Filter and GPS Control Bar */}
-      <details className="marketplace-filters-panel">
-        <summary>Bộ lọc và vị trí</summary>
+      <details open className="marketplace-filters-panel">
+        <summary>Bộ lọc giống lúa &amp; vị trí GPS</summary>
         <div className="filters-row">
           {/* Seed Type Keyword Search */}
           <div className="filter-group search-group">
