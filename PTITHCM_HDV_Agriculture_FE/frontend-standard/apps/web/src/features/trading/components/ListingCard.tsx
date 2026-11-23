@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ListingDTO } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
+import { getRiceArtwork } from '../utils/riceArtwork';
 import {
   formatArea,
   formatDistance,
+  formatPricePerKg,
   formatVND,
   formatYield,
 } from '../../../shared/utils/formatters';
@@ -46,38 +50,54 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
     className: '',
   };
 
+  const [imageBroken, setImageBroken] = useState(false);
+  const artwork = getRiceArtwork(listing.seedType);
+  const hasUploadedImage = Boolean(listing.images?.length) && !imageBroken;
+  const pricePerKg = formatPricePerKg(listing.expectedPrice, listing.estimatedYield);
+
   return (
     <article className="listing-card">
       <div className="card-top">
         <div className="produce-header">
           <span className="rice-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={20} />
           </span>
           <div>
             <h3 className="produce-title">{listing.seedType}</h3>
-            <span className="farmer-ref">Nông dân: {listing.farmerId.slice(0, 8)}…</span>
+            <span className="farmer-ref">
+              Nhà nông xác thực · #{listing.farmerId.slice(-4).toUpperCase()}
+            </span>
           </div>
         </div>
         <span className={`status-pill ${currentStatus.className}`}>{currentStatus.label}</span>
       </div>
 
-      {listing.images && listing.images.length > 0 && (
+      {hasUploadedImage ? (
         <div className="card-produce-media">
           <img
             src={listing.images[0]}
             alt={listing.seedType}
             className="card-produce-img"
-            loading="lazy"
+            onError={() => setImageBroken(true)}
           />
           {listing.images.length > 1 && (
-            <span className="card-photo-count">📷 {listing.images.length} ảnh</span>
+            <span className="card-photo-count">
+              <UiIcon name="camera" size={14} /> {listing.images.length} ảnh
+            </span>
           )}
         </div>
+      ) : (
+        <figure className="feed-illustration">
+          <img src={artwork.src} alt="" />
+          <figcaption>{artwork.label}</figcaption>
+        </figure>
       )}
-
       <div className="card-price-section">
         <span className="price-label">Giá mong muốn:</span>
-        <span className="price-value">{formatVND(listing.expectedPrice)}</span>
+        <div className="card-price-stack">
+          <span className="price-value tabular-nums">{formatVND(listing.expectedPrice)}</span>
+          {pricePerKg && <span className="price-per-kg tabular-nums">({pricePerKg})</span>}
+        </div>
       </div>
 
       <div className="card-specs-grid">

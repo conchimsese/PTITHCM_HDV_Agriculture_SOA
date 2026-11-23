@@ -17,6 +17,8 @@ enum ListingStatus {
 enum OfferStatus {
   PENDING
   ACCEPTED
+  REJECTED
+  CANCELLED
 }
 
 // ─── Listing ──────────────────────────────────────────────
@@ -32,6 +34,7 @@ model Listing {
   latitude                 Decimal       @db.Decimal(9, 6)
   longitude                Decimal       @db.Decimal(9, 6)
   expectedPrice            Decimal       @map("expected_price") @db.Decimal(18, 2)
+  images                   String[]      @default([])
   status                   ListingStatus @default(OPEN)
   winningContractId        String?       @map("winning_contract_id") @db.Uuid
   winningPaymentTrackingId String?       @map("winning_payment_tracking_id") @db.Uuid
@@ -50,6 +53,7 @@ model Offer {
   listingId     String      @map("listing_id") @db.Uuid
   farmerId      String      @map("farmer_id") @db.Uuid
   traderId      String      @map("trader_id") @db.Uuid
+  offeredPrice  Decimal     @default(0) @map("offered_price") @db.Decimal(18, 2)
   depositAmount Decimal     @default(0) @map("deposit_amount") @db.Decimal(18, 2)
   status        OfferStatus @default(PENDING)
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)

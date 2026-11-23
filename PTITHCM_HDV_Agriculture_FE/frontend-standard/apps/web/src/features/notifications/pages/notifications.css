@@ -1,3 +1,23 @@
+.notification-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.notification-header-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.notification-refresh-btn {
+  background: #fff;
+  border: 1px solid #dce6dd;
+  color: #246b45;
+}
 .notification-count {
   display: inline-grid;
   place-items: center;
@@ -119,9 +139,9 @@
   line-height: 1.7;
 }
 .notification-preview p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: #607267;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #4b5d52;
   margin: 6px 0;
   overflow: hidden;
   display: -webkit-box;
@@ -130,41 +150,41 @@
   overflow-wrap: anywhere;
 }
 .notification-preview small {
-  color: #899584;
-  font-size: 10px;
+  color: #526459;
+  font-size: 12px;
 }
 .notification-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #246b45;
   flex-shrink: 0;
 }
 .notification-inbox .user-pagination {
   padding: 0 16px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .notification-detail {
-  padding: 28px;
+  padding: 24px;
   min-width: 0;
 }
 .notification-detail article h2 {
-  font-size: 23px;
-  line-height: 1.5;
+  font-size: 22px;
+  line-height: 1.45;
   margin: 14px 0;
   overflow-wrap: anywhere;
 }
 .notification-detail article time {
-  font-size: 11px;
-  color: #899584;
+  font-size: 12px;
+  color: #526459;
 }
 .notification-content {
-  font-size: 14px;
-  color: #405547;
-  line-height: 1.9;
+  font-size: 14.5px;
+  color: #2c4336;
+  line-height: 1.75;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  margin: 25px 0;
+  margin: 22px 0;
 }
 .notification-icon.large {
   height: 58px;
@@ -174,37 +194,41 @@
 }
 .notification-back,
 .notification-account-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: #246b45;
+  font-weight: 600;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 13.5px;
 }
 .notification-account-link {
-  display: block;
-  margin-top: 25px;
+  margin-top: 20px;
 }
 .notification-empty {
   text-align: center;
-  padding: 65px 25px;
-  color: #607267;
-  line-height: 1.8;
+  padding: 60px 25px;
+  color: #526459;
+  line-height: 1.75;
 }
 .notification-empty > span {
   font-size: 43px;
-  color: #86a27a;
+  color: #526459;
 }
 .notification-empty h2 {
   font-size: 18px;
   color: #182820;
 }
 .notification-empty p {
-  font-size: 12px;
-  max-width: 290px;
+  font-size: 13px;
+  max-width: 300px;
   margin: 0 auto 20px;
 }
 .notification-empty button {
   border: 1px solid #dce6dd;
   border-radius: 10px;
-  padding: 12px;
+  min-height: 44px;
+  padding: 10px 16px;
   color: #246b45;
   background: white;
 }

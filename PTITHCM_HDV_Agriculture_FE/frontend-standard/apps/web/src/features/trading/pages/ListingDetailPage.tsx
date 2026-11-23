@@ -1,7 +1,14 @@
 import { useState } from 'react';
+import { getRiceArtwork } from '../utils/riceArtwork';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useSession } from '../../../shared/hooks/useAuth';
-import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
+import { UiIcon } from '../../../shared/ui/UiIcon';
+import {
+  formatArea,
+  formatPricePerKg,
+  formatVND,
+  formatYield,
+} from '../../../shared/utils/formatters';
 import { QuickOfferModal } from '../components/QuickOfferModal';
 import { useListingDetail } from '../hooks/useListingDetail';
 import './trading.css';
@@ -36,7 +43,7 @@ export function ListingDetailPage() {
       <div className="trading-page listing-detail-page">
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không tìm thấy bài đăng</h3>
           <p>{error?.message || 'Bài đăng không tồn tại hoặc đã bị xóa.'}</p>
@@ -58,17 +65,17 @@ export function ListingDetailPage() {
 
   const statusMap = {
     OPEN: {
-      label: 'Đang mở nhận báo giá (OPEN)',
+      label: 'Đang mở nhận báo giá',
       desc: 'Nông dân đang mở nhận đề xuất thu mua từ các thương lái.',
       className: 'status-open',
     },
     LOCKED: {
-      label: 'Đã nhận cọc độc quyền (LOCKED)',
+      label: 'Đã nhận cọc giữ chỗ',
       desc: 'Một thương lái đã nạp 5% tiền cọc cam kết thành công. Bài đăng tạm khóa.',
       className: 'status-locked',
     },
     SOLD: {
-      label: 'Đã hoàn tất bán (SOLD)',
+      label: 'Đã hoàn tất bán',
       desc: 'Hợp đồng đã hoàn thành nghiệm thu và bàn giao lúa thành công.',
       className: 'status-sold',
     },
@@ -80,9 +87,10 @@ export function ListingDetailPage() {
     className: '',
   };
 
-  // Yield per hectare metric
+  // Yield per hectare metric & price per kg estimate
   const yieldPerHa =
     listing.area > 0 ? ((listing.estimatedYield / listing.area) * 10000) / 1000 : 0;
+  const pricePerKg = formatPricePerKg(listing.expectedPrice, listing.estimatedYield);
 
   return (
     <div className="trading-page listing-detail-page">
@@ -98,8 +106,8 @@ export function ListingDetailPage() {
       {/* Just Created Success Alert */}
       {wasJustCreated && (
         <div className="alert alert-success" role="status">
-          ✓ Đăng bài bán lúa thành công! Sản phẩm hiện đã sẵn sàng trên sàn thị trường để thương lái
-          gửi báo giá.
+          <UiIcon name="check" size={16} /> Đăng bài bán lúa thành công! Sản phẩm hiện đã sẵn sàng
+          trên sàn thị trường để thương lái gửi báo giá.
         </div>
       )}
 
@@ -108,7 +116,7 @@ export function ListingDetailPage() {
         <div className="detail-header">
           <div className="detail-title-group">
             <span className="detail-rice-icon" aria-hidden="true">
-              🌾
+              <UiIcon name="rice" size={24} />
             </span>
             <div>
               <h1>{listing.seedType}</h1>
@@ -120,8 +128,8 @@ export function ListingDetailPage() {
           </div>
         </div>
 
-        {/* Produce Photos Gallery */}
-        {listing.images && listing.images.length > 0 && (
+        {/* Produce Photos Gallery or V5 Variety Illustration */}
+        {listing.images && listing.images.length > 0 ? (
           <div className="detail-gallery">
             <div className="gallery-main-view">
               <img
@@ -150,13 +158,23 @@ export function ListingDetailPage() {
               </div>
             )}
           </div>
+        ) : (
+          <figure className="feed-illustration" style={{ marginBottom: '20px' }}>
+            <img src={getRiceArtwork(listing.seedType).src} alt={listing.seedType} />
+            <figcaption>{getRiceArtwork(listing.seedType).label}</figcaption>
+          </figure>
         )}
 
         {/* Price & Primary CTA Banner */}
         <div className="detail-price-banner">
           <div className="price-block">
             <span className="price-tag-label">Giá kỳ vọng (toàn bộ sản lượng)</span>
-            <span className="price-tag-value">{formatVND(listing.expectedPrice)}</span>
+            <span className="price-tag-value tabular-nums">{formatVND(listing.expectedPrice)}</span>
+            {pricePerKg && (
+              <span className="detail-price-per-kg tabular-nums">
+                Đơn giá ước tính: {pricePerKg}
+              </span>
+            )}
           </div>
 
           <div className="cta-block">
@@ -166,7 +184,7 @@ export function ListingDetailPage() {
                   to={`/bai-dang/${listing.listingId}/bao-gia`}
                   className="primary-button cta-btn"
                 >
-                  🏷️ Xem báo giá đã nhận
+                  <UiIcon name="offers" size={17} /> Xem báo giá đã nhận
                 </Link>
                 <Link to="/bai-dang" className="secondary-button cta-btn">
                   Quản lý bài đăng
@@ -180,13 +198,12 @@ export function ListingDetailPage() {
                     className="primary-button cta-btn"
                     onClick={() => setOfferModalOpen(true)}
                   >
-                    📝 Gửi báo giá thu mua ngay
+                    <UiIcon name="edit" size={17} /> Gửi báo giá thu mua ngay
                   </button>
                 ) : (
                   <button type="button" className="primary-button cta-btn" disabled>
-                    {listing.status === 'LOCKED'
-                      ? '🔒 Đã nhận cọc đặt chỗ'
-                      : '✓ Giao dịch đã hoàn tất'}
+                    <UiIcon name={listing.status === 'LOCKED' ? 'lock' : 'check'} size={17} />{' '}
+                    {listing.status === 'LOCKED' ? 'Đã nhận cọc đặt chỗ' : 'Giao dịch đã hoàn tất'}
                   </button>
                 )}
                 <Link to="/thi-truong" className="secondary-button cta-btn">
@@ -206,7 +223,7 @@ export function ListingDetailPage() {
         <div className="specs-details-grid">
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              🌾
+              <UiIcon name="rice" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Giống lúa canh tác</span>
@@ -216,7 +233,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              ⚖️
+              <UiIcon name="scale" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Sản lượng dự kiến</span>
@@ -226,7 +243,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📐
+              <UiIcon name="area" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Diện tích canh tác</span>
@@ -236,7 +253,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📊
+              <UiIcon name="chart" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Năng suất ước tính</span>
@@ -246,7 +263,7 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              📍
+              <UiIcon name="pin" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Tọa độ GPS ruộng</span>
@@ -258,23 +275,36 @@ export function ListingDetailPage() {
 
           <div className="spec-card">
             <span className="spec-card-icon" aria-hidden="true">
-              👤
+              <UiIcon name="user" size={20} />
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Chủ thửa ruộng (Nông dân)</span>
-              <span className="spec-card-value monospace">
-                {isOwner ? 'Chính bạn (Tài khoản của bạn)' : `${listing.farmerId.slice(0, 8)}…`}
+              <span className="spec-card-value">
+                {isOwner
+                  ? 'Chính bạn (Tài khoản của bạn)'
+                  : `Nhà nông xác thực · #${listing.farmerId.slice(-4).toUpperCase()}`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* References Snapshot Info */}
-        <div className="technical-snapshot-box">
-          <h4>Thông tin liên kết hệ thống (Snapshot)</h4>
-          <p className="snapshot-desc">
-            Dữ liệu giống, năng suất và tọa độ được Trading Service chụp snapshot tự động từ Farming
-            Service khi tạo bài đăng.
+        {/* Collapsible Technical Reference (Progressive Disclosure) */}
+        <details className="technical-snapshot-box">
+          <summary
+            style={{
+              cursor: 'pointer',
+              fontWeight: 650,
+              color: '#164735',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            Thông tin đối chiếu mã ruộng &amp; mùa vụ (kỹ thuật)
+          </summary>
+          <p className="snapshot-desc" style={{ marginTop: '8px' }}>
+            Thông tin giống lúa, sản lượng dự kiến và tọa độ được lưu cố định theo thửa ruộng tại
+            thời điểm nông dân đăng bán.
           </p>
           <div className="snapshot-ids-row">
             <div className="id-tag">
@@ -286,7 +316,7 @@ export function ListingDetailPage() {
               <code>{listing.cropSeasonId}</code>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
       {/* Offer Submission Modal for Traders */}

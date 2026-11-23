@@ -1,5 +1,6 @@
 import { AppError } from "@share/app-error";
 import { ICommandHandler } from "@share/interface";
+import { formatMoney } from "@share/util";
 import {
   createOfferCreatedEnvelope,
   TOPIC_TRADING_OFFER,
@@ -23,6 +24,7 @@ import {
 import {
   ErrCannotOfferOwnListing,
   ErrListingNotOpen,
+  ErrPendingOfferExists,
 } from "../model/error";
 
 /**
@@ -72,13 +74,32 @@ export class CreateOfferCmdHandler
       );
     }
 
+    // 4b. Prevent duplicate PENDING offer by the same trader on the same listing
+    const existingPending = await this.offerRepository.list(
+      {
+        listingId: listing.listingId,
+        traderId,
+        status: OfferStatus.PENDING,
+      },
+      { page: 0, size: 1 },
+    );
+    if (existingPending.total > 0) {
+      throw AppError.from(ErrPendingOfferExists, 409).withCode(
+        "PENDING_OFFER_EXISTS",
+      );
+    }
+
     // 5. Build Offer entity
     const now = new Date();
+    const offeredPrice = formatMoney(
+      validatedDto.offeredPrice ?? listing.expectedPrice,
+    );
     const offer: Offer = {
       offerId: v7(),
       listingId: listing.listingId,
       farmerId: listing.farmerId,
       traderId,
+      offeredPrice,
       depositAmount: "0.00",
       status: OfferStatus.PENDING,
       createdAt: now,

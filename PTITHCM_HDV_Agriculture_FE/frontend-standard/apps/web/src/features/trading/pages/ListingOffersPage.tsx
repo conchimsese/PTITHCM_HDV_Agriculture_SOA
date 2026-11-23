@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { OfferDTO, OfferStatus } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
 import { OfferCard } from '../components/OfferCard';
 import { useListingDetail } from '../hooks/useListingDetail';
@@ -83,7 +84,9 @@ export function ListingOffersPage() {
         <div className="produce-summary-banner">
           <div className="summary-col">
             <span className="summary-label">Sản phẩm chào bán:</span>
-            <span className="summary-val">🌾 {listing.seedType}</span>
+            <span className="summary-val">
+              <UiIcon name="rice" size={16} /> {listing.seedType}
+            </span>
           </div>
           <div className="summary-col">
             <span className="summary-label">Giá kỳ vọng:</span>
@@ -172,7 +175,7 @@ export function ListingOffersPage() {
       ) : isError ? (
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không thể tải danh sách báo giá</h3>
           <p>{error?.message || 'Có lỗi kết nối máy chủ.'}</p>
@@ -183,7 +186,7 @@ export function ListingOffersPage() {
       ) : !data || data.items.length === 0 ? (
         <div className="empty-panel">
           <span className="empty-icon" aria-hidden="true">
-            📭
+            <UiIcon name="offers" size={28} />
           </span>
           <h3>Chưa có báo giá nào {statusFilter ? `ở trạng thái ${statusFilter}` : ''}</h3>
           <p>
@@ -253,12 +256,12 @@ export function ListingOffersPage() {
               disabled={acceptMutation.isPending}
               aria-label="Đóng"
             >
-              ✕
+              <UiIcon name="close" size={18} />
             </button>
 
             <div className="modal-header">
               <span className="modal-leaf" aria-hidden="true">
-                🤝
+                <UiIcon name="check" size={22} />
               </span>
               <div>
                 <h3 id="confirm-modal-title">Chấp nhận báo giá này?</h3>
@@ -345,7 +348,7 @@ export function ListingOffersPage() {
               disabled={rejectMutation.isPending}
               aria-label="Đóng"
             >
-              ✕
+              <UiIcon name="close" size={18} />
             </button>
 
             <div className="modal-header">
@@ -354,7 +357,7 @@ export function ListingOffersPage() {
                 aria-hidden="true"
                 style={{ background: '#fdf2f2', color: '#a83939' }}
               >
-                🚫
+                <UiIcon name="ban" size={22} />
               </span>
               <div>
                 <h3 id="reject-modal-title">Từ chối mức giá này?</h3>

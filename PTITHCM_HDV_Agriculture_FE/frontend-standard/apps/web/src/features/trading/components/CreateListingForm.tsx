@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useCreateListing } from '../hooks/useCreateListing';
-import { formatVND } from '../../../shared/utils/formatters';
+import {
+  formatArea,
+  formatPricePerKg,
+  formatVND,
+  formatYield,
+} from '../../../shared/utils/formatters';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { tradingApi } from '../../../shared/api/runtime';
+import { useSession } from '../../../shared/hooks/useAuth';
+import { usePlotSeasons, usePlots } from '../../farming/api/farmingApi';
 
 // Sample plots/seasons for convenient testing and pre-filling
 const SAMPLE_PLOTS = [
@@ -35,8 +43,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MiB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export function CreateListingForm() {
-  const [plotId, setPlotId] = useState('');
-  const [cropSeasonId, setCropSeasonId] = useState('');
+  const session = useSession();
+  const [searchParams] = useSearchParams();
+  const [plotId, setPlotId] = useState(() => searchParams.get('plotId') ?? '');
+  const [cropSeasonId, setCropSeasonId] = useState(() => searchParams.get('cropSeasonId') ?? '');
   const [priceInput, setPriceInput] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -45,6 +55,22 @@ export function CreateListingForm() {
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const isDemo = Boolean(session?.isDemo);
+  const plotsQuery = usePlots(session?.accountId, !isDemo);
+  const resolvedPlotId = plotId || (!isDemo ? (plotsQuery.data?.items[0]?.plotId ?? '') : '');
+  const seasonsQuery = usePlotSeasons(
+    session?.accountId,
+    resolvedPlotId,
+    !isDemo && Boolean(resolvedPlotId),
+  );
+  const resolvedSeasonId =
+    cropSeasonId || (!isDemo ? (seasonsQuery.data?.items[0]?.cropSeasonId ?? '') : '');
+
+  const activePlot = plotsQuery.data?.items.find((item) => item.plotId === resolvedPlotId);
+  const activeSeason = seasonsQuery.data?.items.find(
+    (item) => item.cropSeasonId === resolvedSeasonId,
+  );
 
   const createListingMutation = useCreateListing();
 
@@ -76,7 +102,7 @@ export function CreateListingForm() {
     if (!priceInput) return;
     const num = parseFloat(priceInput);
     if (!isNaN(num) && num > 0) {
-      setPriceInput(num.toFixed(2));
+      setPriceInput(String(Math.round(num)));
     }
   };
 
@@ -136,17 +162,17 @@ export function CreateListingForm() {
     e.preventDefault();
     setValidationError(null);
 
-    const cleanPlotId = plotId.trim();
-    const cleanCropSeasonId = cropSeasonId.trim();
+    const cleanPlotId = resolvedPlotId.trim();
+    const cleanCropSeasonId = resolvedSeasonId.trim();
     let cleanPrice = priceInput.trim();
 
     if (!UUID_REGEX.test(cleanPlotId)) {
-      setValidationError('Mã thửa ruộng (plotId) phải là định dạng UUID hợp lệ.');
+      setValidationError('Vui lòng chọn thửa ruộng hợp lệ (định dạng UUID).');
       return;
     }
 
     if (!UUID_REGEX.test(cleanCropSeasonId)) {
-      setValidationError('Mã mùa vụ canh tác (cropSeasonId) phải là định dạng UUID hợp lệ.');
+      setValidationError('Vui lòng chọn mùa vụ canh tác hợp lệ (định dạng UUID).');
       return;
     }
 
@@ -156,9 +182,7 @@ export function CreateListingForm() {
       return;
     }
 
-    if (!cleanPrice.includes('.')) {
-      cleanPrice = `${cleanPrice}.00`;
-    }
+    cleanPrice = numericPrice.toFixed(2);
 
     if (selectedFiles.length === 0) {
       setValidationError(
@@ -201,23 +225,26 @@ export function CreateListingForm() {
 
   return (
     <div className="create-listing-card">
-      {/* Sample Quick Select Box */}
-      <div className="sample-plots-box">
-        <span className="sample-plots-title">💡 Chọn mẫu thử nhanh từ ruộng của bạn:</span>
-        <div className="sample-plots-list">
-          {SAMPLE_PLOTS.map((sample) => (
-            <button
-              key={sample.plotId}
-              type="button"
-              className={`sample-plot-btn ${plotId === sample.plotId ? 'selected' : ''}`}
-              onClick={() => handleSelectSample(sample)}
-            >
-              <span className="sample-plot-name">{sample.name}</span>
-              <span className="sample-plot-desc">{sample.desc}</span>
-            </button>
-          ))}
+      {isDemo && (
+        <div className="sample-plots-box">
+          <span className="sample-plots-title">
+            <UiIcon name="sparkle" size={16} /> Chọn nhanh dữ liệu minh họa (Demo cục bộ):
+          </span>
+          <div className="sample-plots-list">
+            {SAMPLE_PLOTS.map((sample) => (
+              <button
+                key={sample.plotId}
+                type="button"
+                className={`sample-plot-btn ${resolvedPlotId === sample.plotId ? 'selected' : ''}`}
+                onClick={() => handleSelectSample(sample)}
+              >
+                <span className="sample-plot-name">{sample.name}</span>
+                <span className="sample-plot-desc">{sample.desc}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {errorMessage && (
         <div className="alert alert-error" role="alert">
@@ -227,49 +254,161 @@ export function CreateListingForm() {
 
       <form onSubmit={handleSubmit} className="listing-form">
         <fieldset disabled={isSubmitting} className="form-fieldset">
-          {/* Plot ID */}
-          <label className="form-field">
-            <span className="field-label">
-              Mã thửa ruộng (plotId) <span className="required">*</span>
-            </span>
-            <input
-              type="text"
-              name="plotId"
-              value={plotId}
-              onChange={(e) => {
-                setPlotId(e.target.value);
-                setValidationError(null);
-              }}
-              placeholder="Ví dụ: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-              required
-              className="form-input monospace"
-            />
-            <span className="field-hint">
-              Mã định danh duy nhất (UUID) của thửa ruộng trong hệ thống canh tác.
-            </span>
-          </label>
+          {!isDemo && (
+            <>
+              {plotsQuery.isPending ? (
+                <p role="status">Đang tải danh sách thửa ruộng và mùa vụ từ hệ thống…</p>
+              ) : plotsQuery.isError ? (
+                <div className="alert alert-error" role="alert">
+                  Không tải được danh sách thửa ruộng: {plotsQuery.error.message}{' '}
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => void plotsQuery.refetch()}
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              ) : (plotsQuery.data?.items.length ?? 0) === 0 ? (
+                <div className="info-banner" role="status">
+                  <div>
+                    <strong>Bạn chưa có thửa ruộng nào trên hệ thống.</strong>
+                    <p style={{ margin: '6px 0 10px' }}>
+                      Hãy tạo thửa ruộng và mùa vụ trước để hệ thống tự động điền giống lúa, sản
+                      lượng và tọa độ GPS.
+                    </p>
+                    <Link to="/ruong-vu" className="secondary-button">
+                      Đến trang Ruộng &amp; mùa vụ →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <label className="form-field">
+                    <span className="field-label">
+                      Chọn thửa ruộng <span className="required">*</span>
+                    </span>
+                    <select
+                      className="form-input"
+                      value={resolvedPlotId}
+                      onChange={(e) => {
+                        setPlotId(e.target.value);
+                        setCropSeasonId('');
+                        setValidationError(null);
+                      }}
+                    >
+                      {plotsQuery.data?.items.map((item) => (
+                        <option key={item.plotId} value={item.plotId}>
+                          {item.name} · {item.location}
+                        </option>
+                      ))}
+                    </select>
+                    {activePlot && (
+                      <span className="field-hint tabular-nums">
+                        Vị trí: {activePlot.location}
+                        {activePlot.area
+                          ? ` · Diện tích ${formatArea(Number(activePlot.area))}`
+                          : ''}
+                      </span>
+                    )}
+                  </label>
 
-          {/* Crop Season ID */}
-          <label className="form-field">
-            <span className="field-label">
-              Mã mùa vụ thu hoạch (cropSeasonId) <span className="required">*</span>
-            </span>
-            <input
-              type="text"
-              name="cropSeasonId"
-              value={cropSeasonId}
-              onChange={(e) => {
-                setCropSeasonId(e.target.value);
-                setValidationError(null);
+                  <label className="form-field">
+                    <span className="field-label">
+                      Chọn mùa vụ canh tác <span className="required">*</span>
+                    </span>
+                    <select
+                      className="form-input"
+                      value={resolvedSeasonId}
+                      disabled={seasonsQuery.isPending}
+                      onChange={(e) => {
+                        setCropSeasonId(e.target.value);
+                        setValidationError(null);
+                      }}
+                    >
+                      {seasonsQuery.isPending && <option value="">Đang tải mùa vụ…</option>}
+                      {!seasonsQuery.isPending && (seasonsQuery.data?.items.length ?? 0) === 0 && (
+                        <option value="">Thửa ruộng này chưa có mùa vụ nào</option>
+                      )}
+                      {seasonsQuery.data?.items.map((item) => (
+                        <option key={item.cropSeasonId} value={item.cropSeasonId}>
+                          {item.seasonName} · Giống {item.cropType}
+                          {item.expectedYield != null
+                            ? ` (${formatYield(Number(item.expectedYield))})`
+                            : ''}
+                        </option>
+                      ))}
+                    </select>
+                    {!seasonsQuery.isPending && (seasonsQuery.data?.items.length ?? 0) === 0 ? (
+                      <span className="field-hint">
+                        Thửa ruộng này chưa có mùa vụ. <Link to="/ruong-vu">Tạo mùa vụ mới →</Link>
+                      </span>
+                    ) : (
+                      activeSeason && (
+                        <span className="field-hint">
+                          Giống lúa: <strong>{activeSeason.cropType}</strong>
+                          {activeSeason.expectedYield != null
+                            ? ` · Sản lượng dự kiến ${formatYield(Number(activeSeason.expectedYield))}`
+                            : ''}
+                        </span>
+                      )
+                    )}
+                  </label>
+                </>
+              )}
+            </>
+          )}
+
+          <details open={isDemo}>
+            <summary
+              style={{
+                cursor: 'pointer',
+                fontWeight: 600,
+                minHeight: '44px',
+                display: 'flex',
+                alignItems: 'center',
               }}
-              placeholder="Ví dụ: 7c9e6679-7425-40de-944b-e07fc1f90ae7"
-              required
-              className="form-input monospace"
-            />
-            <span className="field-hint">
-              Hệ thống sẽ tự động đồng bộ giống lúa, sản lượng dự kiến và tọa độ GPS từ mùa vụ này.
-            </span>
-          </label>
+            >
+              {isDemo ? 'Mã thửa ruộng & mùa vụ' : 'Thông tin kỹ thuật (mã thửa & mùa vụ)'}
+            </summary>
+            <div style={{ display: 'grid', gap: '14px', paddingTop: '10px' }}>
+              <label className="form-field">
+                <span className="field-label">
+                  Mã thửa ruộng (plotId) <span className="required">*</span>
+                </span>
+                <input
+                  type="text"
+                  name="plotId"
+                  value={resolvedPlotId}
+                  onChange={(e) => {
+                    setPlotId(e.target.value);
+                    setValidationError(null);
+                  }}
+                  placeholder="Ví dụ: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  required
+                  className="form-input monospace"
+                />
+              </label>
+
+              <label className="form-field">
+                <span className="field-label">
+                  Mã mùa vụ thu hoạch (cropSeasonId) <span className="required">*</span>
+                </span>
+                <input
+                  type="text"
+                  name="cropSeasonId"
+                  value={resolvedSeasonId}
+                  onChange={(e) => {
+                    setCropSeasonId(e.target.value);
+                    setValidationError(null);
+                  }}
+                  placeholder="Ví dụ: 7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                  required
+                  className="form-input monospace"
+                />
+              </label>
+            </div>
+          </details>
 
           {/* Facebook-Style Produce Picture Composer (System Color & Format) */}
           <div className="form-field photo-upload-field">
@@ -303,7 +442,7 @@ export function CreateListingForm() {
                       title="Xóa ảnh này"
                       aria-label={`Xóa ảnh ${idx + 1}`}
                     >
-                      ✕
+                      <UiIcon name="close" size={14} />
                     </button>
                   </div>
                 ))}
@@ -330,9 +469,7 @@ export function CreateListingForm() {
                 onClick={() => cameraInputRef.current?.click()}
                 disabled={selectedFiles.length >= MAX_PHOTOS || isSubmitting}
               >
-                <span className="btn-icon" aria-hidden="true">
-                  📸
-                </span>
+                <UiIcon name="camera" size={18} />
                 <span>Chụp ảnh thực tế (Camera)</span>
               </button>
 
@@ -354,9 +491,7 @@ export function CreateListingForm() {
                 onClick={() => galleryInputRef.current?.click()}
                 disabled={selectedFiles.length >= MAX_PHOTOS || isSubmitting}
               >
-                <span className="btn-icon" aria-hidden="true">
-                  🖼️
-                </span>
+                <UiIcon name="plus" size={18} />
                 <span>Chọn từ thư viện máy</span>
               </button>
             </div>
@@ -370,34 +505,37 @@ export function CreateListingForm() {
             <div className="price-input-wrapper">
               <input
                 type="text"
+                inputMode="numeric"
                 name="expectedPrice"
                 value={priceInput}
                 onChange={handlePriceChange}
                 onBlur={handlePriceBlur}
-                placeholder="Ví dụ: 4500000.00"
+                placeholder="Ví dụ: 90000000"
                 required
-                className="form-input"
+                className="form-input tabular-nums"
               />
               <span className="currency-suffix">VND</span>
             </div>
             {priceInput && (
-              <div className="price-preview-pill">
+              <div className="price-preview-pill tabular-nums">
                 Hiển thị trên thị trường: <strong>{formatVND(priceInput)}</strong>
+                {activeSeason?.expectedYield != null &&
+                  formatPricePerKg(priceInput, Number(activeSeason.expectedYield)) && (
+                    <> ({formatPricePerKg(priceInput, Number(activeSeason.expectedYield))})</>
+                  )}
               </div>
             )}
             <span className="field-hint">
-              Nhập số tiền theo định dạng số thực dương (ví dụ: 4500000.00).
+              Nhập số tiền VNĐ cả lô lúa (ví dụ: 90000000 cho 90 triệu đồng).
             </span>
           </label>
 
           <div className="info-banner">
-            <span className="info-icon" aria-hidden="true">
-              ℹ️
-            </span>
+            <UiIcon name="info" size={18} className="info-icon" />
             <span>
-              Theo quy chuẩn hệ thống, bài đăng sau khi tạo sẽ ở trạng thái <strong>OPEN</strong> để
-              nhận báo giá từ thương lái. Nông dân có thể chấp nhận nhiều báo giá để cùng trao đổi,
-              và chỉ khóa độc quyền khi thương lái đặt cọc thành công.
+              Sau khi đăng bài, tin sẽ chuyển sang trạng thái <strong>đang mở nhận báo giá</strong>{' '}
+              để thương lái đề xuất giá thu mua. Nông dân có thể mở trò chuyện với nhiều thương lái,
+              và chỉ khóa lô lúa khi bên mua đặt cọc thành công.
             </span>
           </div>
 

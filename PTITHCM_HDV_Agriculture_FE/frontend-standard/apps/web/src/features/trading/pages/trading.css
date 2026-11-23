@@ -117,7 +117,7 @@
 
 .status-pill.status-locked {
   background-color: #fef8ec;
-  color: #b07d12;
+  color: #885b17;
   border: 1px solid #fae6b8;
 }
 
@@ -196,10 +196,10 @@
 
 .status-tabs-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   border-bottom: 2px solid #dce6dd;
   padding-bottom: 8px;
-  overflow-x: auto;
 }
 
 .status-tab {
@@ -232,7 +232,8 @@
   background: #ffffff;
   border: 1px solid #dce6dd;
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  max-width: 100%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
@@ -280,7 +281,7 @@
 
 .price-cell {
   font-weight: 700;
-  color: #d8ad47;
+  color: #885b17;
   font-size: 14.5px;
 }
 
@@ -337,6 +338,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  min-width: 0;
+  max-width: 100%;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
 }
 
@@ -406,9 +409,19 @@
   border: none;
   padding: 0;
   margin: 0;
+  min-width: 0;
+  min-inline-size: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.form-field,
+.form-input,
+.photo-upload-field {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-field {
@@ -438,6 +451,13 @@
   transition: border-color 0.15s;
 }
 
+select.form-input {
+  height: auto;
+  min-height: 48px;
+  padding-block: 10px;
+  line-height: 1.4;
+}
+
 .form-input.monospace {
   font-family: monospace;
   font-size: 13px;
@@ -449,9 +469,12 @@
   box-shadow: 0 0 0 3px rgba(36, 107, 69, 0.15);
 }
 
-.field-hint {
-  font-size: 12px;
-  color: #607267;
+.trading-page .field-hint,
+.listing-form .field-hint {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #526459;
 }
 
 .price-input-wrapper {
@@ -593,6 +616,7 @@
 }
 
 .photo-actions-row {
+  position: relative;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -631,7 +655,8 @@
 
 .gallery-main-view {
   width: 100%;
-  height: 380px;
+  aspect-ratio: 16 / 9;
+  max-height: 440px;
   border-radius: 16px;
   overflow: hidden;
   background: #f8faf7;
@@ -691,8 +716,31 @@
 
 .form-actions {
   display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 10px;
+}
+
+.form-actions .submit-btn,
+.form-actions .cancel-btn {
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.form-actions .submit-btn {
+  flex: 1 1 220px;
+}
+
+.form-actions .cancel-btn {
+  flex: 0 0 auto;
+  min-width: 104px;
+}
+
+.detail-price-per-kg {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #526459;
 }
 
 /* ─── Listing Detail Page ────────────────────────────────────────── */
@@ -768,7 +816,7 @@
 .price-tag-value {
   font-size: 32px;
   font-weight: 800;
-  color: #d8ad47;
+  color: #885b17;
   letter-spacing: -0.5px;
 }
 
@@ -943,7 +991,7 @@
 }
 
 .summary-val.highlight {
-  color: #d8ad47;
+  color: #885b17;
   font-size: 16px;
   font-weight: 750;
 }
@@ -981,11 +1029,13 @@
 }
 
 .offer-card.accepted {
-  border-left: 4px solid #246b45;
+  border: 1px solid #b9cbbd;
+  background-color: #fafdfb;
 }
 
 .offer-card.pending {
-  border-left: 4px solid #d8ad47;
+  border: 1px solid #e8d49c;
+  background-color: #fefcf7;
 }
 
 .offer-card-top {
@@ -1047,7 +1097,7 @@
 }
 
 .meta-value.highlight {
-  color: #d8ad47;
+  color: #885b17;
 }
 
 .meta-link {
@@ -1084,7 +1134,7 @@
 }
 
 .offer-btn {
-  height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1137,18 +1187,20 @@
 /* ─── Offer Card Status Themes & Counter-Offer Price ─────────────── */
 
 .offer-card.rejected {
-  border-left: 4px solid #a83939;
+  border: 1px solid #eed0d0;
+  background-color: #fefafa;
   opacity: 0.95;
 }
 
 .offer-card.cancelled {
-  border-left: 4px solid #8b9d90;
+  border: 1px solid #dce6dd;
+  background-color: #f8faf8;
   opacity: 0.88;
 }
 
 .status-pill.status-pending {
   background-color: #fef8ec;
-  color: #b07d12;
+  color: #885b17;
   border: 1px solid #fae6b8;
 }
 
@@ -1192,7 +1244,7 @@
 .highlight-price {
   font-size: 18px;
   font-weight: 750;
-  color: #d8ad47;
+  color: #885b17;
 }
 
 .highlight-deposit {
@@ -1293,7 +1345,7 @@
 
 .diff-badge.lower {
   background-color: #fef8ec;
-  color: #b07d12;
+  color: #885b17;
   border: 1px solid #fae6b8;
 }
 
@@ -1305,11 +1357,89 @@
 }
 
 .recap-price-label {
-  font-size: 11px;
-  color: #607267;
+  font-size: 12px;
+  color: #526459;
 }
 
 .summary-highlight {
-  color: #d8ad47;
+  color: #885b17;
   font-size: 15px;
+}
+
+.trading-page .offer-listing-link,
+.trading-page .offer-card a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.trading-page button,
+.trading-page a.header-action-btn,
+.trading-page a.primary-button,
+.trading-page a.secondary-button,
+.trading-page a.back-link,
+.trading-page a.table-btn,
+.trading-page .status-tab,
+.trading-page .page-nav-btn {
+  min-height: 44px;
+}
+
+@media (max-width: 720px) {
+  .table-container {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .listings-table,
+  .listings-table tbody {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+  }
+  .listings-table thead {
+    display: none;
+  }
+  .listings-table tr {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    background: #ffffff;
+    border: 1px solid #dce6dd;
+    border-radius: 16px;
+  }
+  .listings-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    border-bottom: 1px solid #edf5ed;
+    text-align: right;
+  }
+  .listings-table td:last-child {
+    border-bottom: 0;
+    padding-top: 8px;
+  }
+  .listings-table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 600;
+    color: #526459;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .listings-table td.align-right,
+  .listings-table .table-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+  .listings-table .table-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .listings-table .table-btn {
+    flex: 1;
+    justify-content: center;
+  }
 }

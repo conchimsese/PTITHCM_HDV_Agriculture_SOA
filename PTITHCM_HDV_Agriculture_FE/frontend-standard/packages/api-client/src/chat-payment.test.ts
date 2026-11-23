@@ -67,4 +67,35 @@ describe('Chat and Payment integration boundary', () => {
     );
     await expect(payments.deposits()).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
+  it('sends Idempotency-Key equal to decisionId for admin dispute resolution', async () => {
+    const disputePayload = {
+      disputeId: uuid,
+      contractId: uuid,
+      openedBy: uuid,
+      status: 'RESOLVED',
+      description: 'Sample',
+      reasonCode: 'LATE_DELIVERY',
+      depositHold: false,
+      stateVersion: 2,
+      assignedAdminId: uuid,
+      responseDueAt: null,
+      outcome: 'NO_VIOLATION',
+    };
+    const { payments, fetchImpl } = setup(Response.json(disputePayload));
+    await payments.decideDispute(uuid, {
+      decisionId: uuid,
+      expectedVersion: 1,
+      outcome: 'NO_VIOLATION',
+      liableAccountId: null,
+      violationCode: null,
+      penaltyPoints: null,
+      depositDisposition: 'NONE',
+      reason: 'Không đủ căn cứ xử phạt.',
+      evidenceRefs: [],
+    });
+    expect(fetchImpl.mock.calls[0][1]?.headers).toMatchObject({
+      'Idempotency-Key': uuid,
+      Authorization: 'Bearer access',
+    });
+  });
 });

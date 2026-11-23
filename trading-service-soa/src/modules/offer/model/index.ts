@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { formatMoney } from "@share/util";
 
-// ─── Offer Status (BA-SOA §5: PENDING → ACCEPTED) ────────
+// ─── Offer Status (PENDING → ACCEPTED | REJECTED | CANCELLED) ──
 
 export enum OfferStatus {
   PENDING = "PENDING",
   ACCEPTED = "ACCEPTED",
+  REJECTED = "REJECTED",
+  CANCELLED = "CANCELLED",
 }
 
 // ─── Domain Entity ──────────────────────────────────────
@@ -14,6 +17,10 @@ export const OfferSchema = z.object({
   listingId: z.string().uuid(),
   farmerId: z.string().uuid(),
   traderId: z.string().uuid(),
+  offeredPrice: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, "Must be a decimal string (e.g. '4200000.00')")
+    .optional(),
   depositAmount: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Must be a decimal string (e.g. '0.00')"),
@@ -30,6 +37,11 @@ export type Offer = z.infer<typeof OfferSchema>;
 
 export const CreateOfferDTOSchema = z.object({
   listingId: z.string().uuid({ message: "listingId must be a valid UUID" }),
+  offeredPrice: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, "offeredPrice must be a positive decimal string")
+    .refine((val) => parseFloat(val) > 0, "offeredPrice must be greater than 0")
+    .optional(),
 });
 
 export type CreateOfferDTO = z.infer<typeof CreateOfferDTOSchema>;
@@ -52,6 +64,7 @@ export const OfferResponseDTOSchema = z.object({
   listingId: z.string().uuid(),
   farmerId: z.string().uuid(),
   traderId: z.string().uuid(),
+  offeredPrice: z.string(),
   depositAmount: z.string(),
   status: z.nativeEnum(OfferStatus),
   createdAt: z.date(),
@@ -68,7 +81,8 @@ export function toOfferResponseDTO(offer: Offer): OfferResponseDTO {
     listingId: offer.listingId,
     farmerId: offer.farmerId,
     traderId: offer.traderId,
-    depositAmount: offer.depositAmount,
+    offeredPrice: formatMoney(offer.offeredPrice ?? offer.depositAmount),
+    depositAmount: formatMoney(offer.depositAmount),
     status: offer.status,
     createdAt: offer.createdAt,
     updatedAt: offer.updatedAt,

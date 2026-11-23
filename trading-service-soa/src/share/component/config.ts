@@ -53,5 +53,10 @@ export const config = {
     tradingToUser: process.env.SERVICE_KEY_TRADING_TO_USER || '',
   },
 
+  media: {
+    dir: process.env.LISTING_MEDIA_DIR || path.resolve(process.cwd(), '.media'),
+    publicGatewayUrl: process.env.PUBLIC_GATEWAY_URL || 'http://localhost:8080',
+  },
+
   nodeEnv: process.env.NODE_ENV || 'development',
 };

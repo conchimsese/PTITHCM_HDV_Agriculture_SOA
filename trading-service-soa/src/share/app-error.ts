@@ -120,6 +120,9 @@ export const responseErr = (err: Error, req: Request, res: Response) => {
   }
 
   // 3. Unknown error → 500
+  if (isProduction) {
+    console.error('[error]', path, err?.stack || err);
+  }
   const appErr = ErrInternalServer.wrap(err);
   res.status(appErr.getStatusCode()).json(appErr.toJSON(path, isProduction));
 };

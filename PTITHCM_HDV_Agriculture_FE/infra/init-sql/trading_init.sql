@@ -9,10 +9,13 @@ END $$;
 
 DO $$
 BEGIN
-    CREATE TYPE "OfferStatus" AS ENUM ('PENDING', 'ACCEPTED');
+    CREATE TYPE "OfferStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED');
 EXCEPTION
     WHEN duplicate_object THEN NULL;
 END $$;
+
+ALTER TYPE "OfferStatus" ADD VALUE IF NOT EXISTS 'REJECTED';
+ALTER TYPE "OfferStatus" ADD VALUE IF NOT EXISTS 'CANCELLED';
 
 CREATE TABLE IF NOT EXISTS listings (
     listing_id UUID PRIMARY KEY,
@@ -25,6 +28,7 @@ CREATE TABLE IF NOT EXISTS listings (
     latitude DECIMAL(9, 6) NOT NULL,
     longitude DECIMAL(9, 6) NOT NULL,
     expected_price DECIMAL(18, 2) NOT NULL,
+    images TEXT[] NOT NULL DEFAULT '{}',
     status "ListingStatus" NOT NULL DEFAULT 'OPEN',
     winning_contract_id UUID,
     winning_payment_tracking_id UUID,
@@ -37,6 +41,7 @@ CREATE TABLE IF NOT EXISTS offers (
     listing_id UUID NOT NULL REFERENCES listings(listing_id),
     farmer_id UUID NOT NULL,
     trader_id UUID NOT NULL,
+    offered_price DECIMAL(18, 2) NOT NULL DEFAULT 0,
     deposit_amount DECIMAL(18, 2) NOT NULL DEFAULT 0,
     status "OfferStatus" NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -59,6 +59,8 @@ class DisputeReadServiceTest {
                 "Corrected", List.of(), NOW);
         when(reversals.findByDispute(DISPUTE)).thenReturn(Optional.of(reversal));
         assertEquals(decision, reads.dispute(DISPUTE, TRADER, false).decision());
+        assertEquals(FARMER, reads.dispute(DISPUTE, ADMIN, true).farmerId());
+        assertEquals(TRADER, reads.dispute(DISPUTE, ADMIN, true).traderId());
         assertEquals(reversal, reads.dispute(DISPUTE, TRADER, false).reversal());
         assertEquals(decision, reads.dispute(DISPUTE, ADMIN, true).decision());
         assertNull(reads.dispute(DISPUTE, TRADER, false).adminFiling());

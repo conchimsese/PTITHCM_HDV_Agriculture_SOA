@@ -1,13 +1,29 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   notificationDate,
-  notificationIcons,
   notificationTypeLabels,
   notificationTypeSchema,
   type NotificationFilters,
 } from '@agri/contracts';
+import { UiIcon } from '../../../shared/ui/UiIcon';
+import { humanizeSystemText } from '../../../shared/utils/formatters';
 import { UserError, UserLayout } from '../../users/components/UserLayout';
+
+function notificationCategoryIcon(type: string, referenceType?: string | null): string {
+  if (referenceType === 'CONVERSATION') return 'chat';
+  if (referenceType === 'CONTRACT') return 'contracts';
+  if (referenceType === 'DEPOSIT') return 'deposits';
+  if (referenceType === 'OFFER') return 'offers';
+  if (referenceType === 'ACCOUNT') return 'accounts';
+  if (type.includes('DISPUTE')) return 'disputes';
+  if (type.includes('MESSAGE') || type.includes('CHAT')) return 'chat';
+  if (type.includes('CONTRACT')) return 'contracts';
+  if (type.includes('DEPOSIT')) return 'deposits';
+  if (type.includes('OFFER')) return 'offers';
+  return 'notifications';
+}
 import {
+  useMarkPageRead,
   useMarkRead,
   useNotification,
   useNotifications,
@@ -28,6 +44,10 @@ export function NotificationsPage() {
   };
   const list = useNotifications(filters);
   const count = useUnreadCount();
+  const markPage = useMarkPageRead();
+  const unreadIdsOnPage = (list.data?.items ?? [])
+    .filter((item) => item.status === 'UNREAD')
+    .map((item) => item.notificationId);
   function change(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -45,15 +65,32 @@ export function NotificationsPage() {
           </h1>
           <p>Không bỏ lỡ những cập nhật quan trọng của bạn.</p>
         </div>
-        <button
-          disabled={list.isFetching || count.isFetching}
-          onClick={() => {
-            void list.refetch();
-            void count.refetch();
-          }}
-        >
-          ↻ Làm mới
-        </button>
+        <div className="notification-header-actions">
+          {unreadIdsOnPage.length > 0 && (
+            <button
+              type="button"
+              className="user-primary"
+              disabled={markPage.isPending}
+              onClick={() => markPage.mutate(unreadIdsOnPage)}
+            >
+              <UiIcon name="check" size={16} />
+              {markPage.isPending
+                ? 'Đang cập nhật…'
+                : `Đánh dấu đã đọc (${unreadIdsOnPage.length})`}
+            </button>
+          )}
+          <button
+            type="button"
+            className="notification-refresh-btn"
+            disabled={list.isFetching || count.isFetching}
+            onClick={() => {
+              void list.refetch();
+              void count.refetch();
+            }}
+          >
+            <UiIcon name="refresh" size={16} /> Làm mới
+          </button>
+        </div>
       </header>
       {count.error && <UserError error={count.error} retry={() => void count.refetch()} />}
       <section className="notification-filters">
@@ -97,7 +134,9 @@ export function NotificationsPage() {
             <UserError error={list.error} retry={() => void list.refetch()} />
           ) : list.data?.items.length === 0 ? (
             <div className="notification-empty">
-              <span aria-hidden="true">♧</span>
+              <span aria-hidden="true">
+                <UiIcon name="notifications" size={32} />
+              </span>
               <h2>Chưa có thông báo</h2>
               <p>Các cập nhật phù hợp với bộ lọc sẽ xuất hiện tại đây.</p>
               <button onClick={() => navigate('/thong-bao')}>Xem tất cả thông báo</button>
@@ -112,16 +151,19 @@ export function NotificationsPage() {
                     className={item.status === 'UNREAD' ? 'is-unread' : ''}
                   >
                     <span className="notification-icon" aria-hidden="true">
-                      {notificationIcons[item.type]}
+                      <UiIcon
+                        name={notificationCategoryIcon(item.type, item.referenceType)}
+                        size={18}
+                      />
                     </span>
                     <div className="notification-preview">
                       <div className="notification-title">
-                        <strong>{item.title}</strong>
+                        <strong>{humanizeSystemText(item.title)}</strong>
                         {item.status === 'UNREAD' && (
                           <span className="notification-dot" aria-label="Chưa đọc" />
                         )}
                       </div>
-                      <p>{item.content}</p>
+                      <p>{humanizeSystemText(item.content)}</p>
                       <small>{notificationDate(item.createdAt)}</small>
                     </div>
                   </Link>
@@ -156,7 +198,9 @@ export function NotificationsPage() {
             />
           ) : (
             <div className="notification-empty">
-              <span aria-hidden="true">✉</span>
+              <span aria-hidden="true">
+                <UiIcon name="notifications" size={32} />
+              </span>
               <h2>Cập nhật dành cho bạn</h2>
               <p>Chọn một thông báo để xem nội dung chi tiết.</p>
             </div>
@@ -184,23 +228,30 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
         item && (
           <article>
             <span className="notification-icon large" aria-hidden="true">
-              {notificationIcons[item.type]}
+              <UiIcon name={notificationCategoryIcon(item.type, item.referenceType)} size={24} />
             </span>
             <p className="user-badge">{notificationTypeLabels[item.type]}</p>
-            <h2>{item.title}</h2>
+            <h2>{humanizeSystemText(item.title)}</h2>
             <time dateTime={item.createdAt}>{notificationDate(item.createdAt)}</time>
-            <p className="notification-content">{item.content}</p>
+            <p className="notification-content">{humanizeSystemText(item.content)}</p>
             {item.status === 'UNREAD' ? (
               <button
                 className="user-primary"
                 disabled={mark.isPending}
                 onClick={() => mark.mutate(id)}
               >
-                {mark.isPending ? 'Đang cập nhật…' : '✓ Đánh dấu đã đọc'}
+                {mark.isPending ? (
+                  'Đang cập nhật…'
+                ) : (
+                  <>
+                    <UiIcon name="check" size={16} /> Đánh dấu đã đọc
+                  </>
+                )}
               </button>
             ) : (
               <p className="user-success">
-                ✓ Đã đọc {item.readAt && notificationDate(item.readAt)}
+                <UiIcon name="check" size={16} /> Đã đọc{' '}
+                {item.readAt && notificationDate(item.readAt)}
               </p>
             )}
             {mark.error && (
@@ -213,11 +264,26 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
                 Đã đánh dấu thông báo đã đọc.
               </p>
             )}
-            {item.referenceType === 'ACCOUNT' && (
-              <Link className="notification-account-link" to="/tai-khoan">
-                Xem tài khoản của tôi →
-              </Link>
-            )}
+            {(() => {
+              const target =
+                item.referenceType === 'ACCOUNT'
+                  ? { to: '/tai-khoan', label: 'Xem tài khoản của tôi →' }
+                  : item.referenceType === 'CONVERSATION'
+                    ? { to: `/chat/${item.referenceId}`, label: 'Mở cuộc trò chuyện →' }
+                    : item.referenceType === 'CONTRACT' || item.referenceType === 'DEPOSIT'
+                      ? {
+                          to: `/payments/contracts/${item.referenceId}`,
+                          label: 'Xem hợp đồng & cọc →',
+                        }
+                      : item.referenceType === 'OFFER'
+                        ? { to: '/bao-gia', label: 'Xem báo giá →' }
+                        : null;
+              return target ? (
+                <Link className="notification-account-link" to={target.to}>
+                  {target.label}
+                </Link>
+              ) : null;
+            })()}
           </article>
         )
       )}

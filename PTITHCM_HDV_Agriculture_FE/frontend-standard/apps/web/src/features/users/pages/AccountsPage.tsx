@@ -97,15 +97,22 @@ export function AccountsPage() {
               <tbody>
                 {list.data?.items.map((account) => (
                   <tr key={account.accountId}>
-                    <td>
-                      <strong>{account.username}</strong>
-                      <small>{account.email}</small>
+                    <td data-label="Tài khoản">
+                      <div className="user-account-cell">
+                        <span className="user-row-avatar" aria-hidden="true">
+                          {account.username.slice(0, 2).toUpperCase()}
+                        </span>
+                        <div>
+                          <strong>{account.username}</strong>
+                          <small>{account.email}</small>
+                        </div>
+                      </div>
                     </td>
-                    <td>{userRoleLabels[account.role]}</td>
-                    <td>
+                    <td data-label="Vai trò">{userRoleLabels[account.role]}</td>
+                    <td data-label="Trạng thái">
                       <span className="user-badge">{accountStatusLabels[account.status]}</span>
                     </td>
-                    <td>
+                    <td data-label="Thao tác">
                       <button
                         onClick={() => {
                           setSelected(account.accountId);

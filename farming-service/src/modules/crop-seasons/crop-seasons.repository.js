@@ -47,6 +47,14 @@ class CropSeasonsRepository extends BaseRepository {
     return this.mapRowToDto(res.rows[0]);
   }
 
+  async findByPlotId(plotId) {
+    const res = await this.query(
+      'SELECT * FROM crop_seasons WHERE plot_id = $1 ORDER BY start_date DESC, crop_season_id DESC',
+      [plotId]
+    );
+    return res.rows.map((row) => this.mapRowToDto(row));
+  }
+
   async update(cropSeasonId, updateData) {
     const { setClause, values } = this.buildUpdateClause(updateData, 2);
     const sql = `

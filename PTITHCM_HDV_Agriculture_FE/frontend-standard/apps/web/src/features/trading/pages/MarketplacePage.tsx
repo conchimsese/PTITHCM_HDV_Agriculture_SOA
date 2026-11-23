@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { ListingDTO, ListingStatus } from '@agri/contracts';
 import { useSession } from '../../../shared/hooks/useAuth';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { ListingCard } from '../components/ListingCard';
 import { QuickOfferModal } from '../components/QuickOfferModal';
 import { LOCATION_PRESETS, useGeolocation, useListings } from '../hooks/useListings';
 import './marketplace.css';
+
+const SEED_QUICK_FILTERS = ['', 'ST25', 'OM18', 'Đài Thơm 8', 'Jasmine 85', 'IR50404'] as const;
 
 export function MarketplacePage() {
   const session = useSession();
@@ -63,7 +66,7 @@ export function MarketplacePage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1>Thị trường thu mua lúa</h1>
+          <h1>Bảng tin bán lúa</h1>
           <p className="page-subtitle">
             Khám phá các sản phẩm lúa chất lượng cao từ nông dân, sắp xếp theo khoảng cách GPS gần
             nhất
@@ -77,7 +80,8 @@ export function MarketplacePage() {
       </div>
 
       {/* Filter and GPS Control Bar */}
-      <section className="marketplace-filters-panel" aria-label="Bộ lọc và định vị">
+      <details open className="marketplace-filters-panel">
+        <summary>Bộ lọc giống lúa &amp; vị trí GPS</summary>
         <div className="filters-row">
           {/* Seed Type Keyword Search */}
           <div className="filter-group search-group">
@@ -86,7 +90,7 @@ export function MarketplacePage() {
             </label>
             <div className="search-input-wrapper">
               <span className="search-icon" aria-hidden="true">
-                🔍
+                <UiIcon name="search" size={16} />
               </span>
               <input
                 id="search-seed"
@@ -106,7 +110,7 @@ export function MarketplacePage() {
                   }}
                   aria-label="Xóa từ khóa tìm kiếm"
                 >
-                  ✕
+                  <UiIcon name="close" size={14} />
                 </button>
               )}
             </div>
@@ -123,10 +127,10 @@ export function MarketplacePage() {
               value={statusFilter}
               onChange={handleStatusChange}
             >
-              <option value="OPEN">Đang mở (OPEN)</option>
+              <option value="OPEN">Đang mở nhận báo giá</option>
               <option value="">Tất cả trạng thái</option>
-              <option value="LOCKED">Đã cọc (LOCKED)</option>
-              <option value="SOLD">Đã bán (SOLD)</option>
+              <option value="LOCKED">Đã đặt cọc</option>
+              <option value="SOLD">Đã bán</option>
             </select>
           </div>
 
@@ -143,7 +147,7 @@ export function MarketplacePage() {
                 disabled={geoLoading}
                 title="Sử dụng tọa độ GPS của thiết bị để tìm lúa gần bạn nhất"
               >
-                {geoLoading ? '📍 Đang định vị…' : '📍 Vị trí của tôi'}
+                <UiIcon name="pin" size={16} /> {geoLoading ? 'Đang định vị…' : 'Vị trí của tôi'}
               </button>
 
               <select
@@ -163,11 +167,32 @@ export function MarketplacePage() {
           </div>
         </div>
 
+        {/* 1-tap Rice Variety Quick Filter Chips */}
+        <div className="seed-quick-chips" role="group" aria-label="Chọn nhanh giống lúa">
+          {SEED_QUICK_FILTERS.map((seed) => {
+            const isActive = seedTypeFilter.trim().toLowerCase() === seed.toLowerCase();
+            return (
+              <button
+                key={seed || 'ALL'}
+                type="button"
+                className={`seed-chip-btn ${isActive ? 'active' : ''}`}
+                aria-pressed={isActive}
+                onClick={() => {
+                  setSeedTypeFilter(seed);
+                  setPage(0);
+                }}
+              >
+                {seed || 'Tất cả giống'}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Location Status Banner */}
         {coords && (
           <div className="location-active-banner">
             <span className="banner-icon" aria-hidden="true">
-              🧭
+              <UiIcon name="compass" size={18} />
             </span>
             <span>
               Đang ưu tiên sản phẩm gần:{' '}
@@ -183,13 +208,15 @@ export function MarketplacePage() {
 
         {geoError && (
           <div className="location-error-banner" role="alert">
-            <span>⚠️ {geoError}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <UiIcon name="disputes" size={16} /> {geoError}
+            </span>
             <span className="error-hint">
               Bạn có thể chọn một trong các khu vực mẫu ở thanh bên trên.
             </span>
           </div>
         )}
-      </section>
+      </details>
 
       {/* Main Content Area: Loading, Error, Empty, or Cards Grid */}
       {isLoading ? (
@@ -201,7 +228,7 @@ export function MarketplacePage() {
       ) : isError ? (
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không thể tải danh sách sản phẩm</h3>
           <p>{error?.message || 'Có lỗi kết nối máy chủ. Vui lòng thử lại.'}</p>
@@ -212,7 +239,7 @@ export function MarketplacePage() {
       ) : !data || data.items.length === 0 ? (
         <div className="empty-panel">
           <span className="empty-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={28} />
           </span>
           <h3>Không tìm thấy bài đăng nào phù hợp</h3>
           <p>Hãy thử thay đổi từ khóa tìm kiếm hoặc chọn tất cả trạng thái để xem thêm kết quả.</p>
@@ -238,7 +265,7 @@ export function MarketplacePage() {
                 listing={listing}
                 userCoords={coords}
                 currentUserId={session?.accountId}
-                onMakeOffer={(item) => setSelectedListingForOffer(item)}
+                onMakeOffer={session?.role === 'TRADER' ? setSelectedListingForOffer : undefined}
               />
             ))}
           </div>

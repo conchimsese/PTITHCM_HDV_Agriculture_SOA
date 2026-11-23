@@ -4,10 +4,11 @@
   color: #19382a;
 }
 .farm-kicker {
-  color: #54816a;
+  color: #246b45;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
+  margin: 0;
 }
 .farm-heading {
   display: flex;
@@ -17,77 +18,172 @@
   flex-wrap: wrap;
 }
 .farm-heading h1 {
-  font-size: clamp(28px, 4vw, 38px);
-  margin: 8px 0;
+  font-size: clamp(24px, 3.6vw, 34px);
+  margin: 6px 0;
+  color: #164735;
 }
 .farm-heading p,
 .farm-card p {
-  color: #60746a;
-  line-height: 1.6;
+  color: #526459;
+  line-height: 1.65;
+  margin: 0;
 }
 .farm-notice {
   background: #fff5dd;
-  border-radius: 10px;
+  border: 1px solid #ead8a5;
+  border-radius: 12px;
   padding: 12px 16px;
-  color: #6c571f;
+  color: #6b450f;
+}
+.farm-success {
+  margin: 12px 0;
+  background: #edf5ed;
+  border: 1px solid #c9dec9;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #164735;
+  font-weight: 600;
+}
+.farm-error {
+  margin: 12px 0;
+  background: #fdf2f2;
+  border: 1px solid #f0d0d0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #8f2d2d;
+  font-weight: 600;
 }
 .farm-card {
   margin-top: 16px;
-  padding: 24px;
-  border-radius: 16px;
-  border: 1px solid #dce9df;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid #dce6dd;
   background: white;
 }
 .farm-card h2 {
-  margin: 0 0 16px;
-  font-size: 20px;
+  margin: 0 0 14px;
+  font-size: 19px;
+  color: #164735;
+}
+.farm-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.farm-card-head h2 {
+  margin: 0;
+}
+.farm-total-cost {
+  color: #164735;
+  background: #edf5ed;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+.farm-details summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #164735;
+  cursor: pointer;
+}
+.farm-details[open] summary {
+  margin-bottom: 14px;
 }
 .farm-selector {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.farm-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
 }
 .farm-selector label,
 .farm-form label,
 .farm-selector div {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   font-size: 14px;
   font-weight: 600;
+  color: #182820;
 }
 .farm-selector small,
 .farm-entries small {
-  color: #6e8277;
+  color: #526459;
   display: block;
-  margin-top: 5px;
+  margin-top: 4px;
   font-weight: 400;
+  font-size: 13px;
 }
 .farm-page input,
-.farm-page select {
+.farm-page select,
+.farm-page textarea {
   width: 100%;
-  border: 1px solid #c9dbcf;
-  border-radius: 8px;
-  padding: 10px;
+  min-height: 44px;
+  border: 1px solid #b9cbbd;
+  border-radius: 12px;
+  padding: 10px 12px;
   font: inherit;
   background: white;
+  color: #182820;
+  box-sizing: border-box;
 }
 .farm-form {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
-.farm-primary {
+.farm-primary,
+.farm-primary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   background: #246b45;
   color: white;
   border: 0;
-  border-radius: 9px;
-  padding: 11px 16px;
+  border-radius: 12px;
+  padding: 10px 18px;
   font: inherit;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   width: fit-content;
 }
-.farm-primary:hover {
+.farm-primary:hover,
+.farm-primary-link:hover {
   background: #164735;
+}
+.farm-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.farm-chip-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #b9cbbd;
+  background: #fff;
+  color: #164735;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.farm-chip-btn.active {
+  background: #edf5ed;
+  border-color: #246b45;
+}
+.farm-empty-state {
+  display: grid;
+  gap: 10px;
 }
 .farm-page :focus-visible {
   outline: 3px solid #d9ad4b;
@@ -101,6 +197,9 @@
 .farm-links a {
   color: #246b45;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .farm-entries {
   list-style: none;

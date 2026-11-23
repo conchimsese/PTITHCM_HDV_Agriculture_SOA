@@ -12,11 +12,13 @@ import {
 } from "./infras/transport";
 import {
   AcceptOfferCmdHandler,
+  CancelOfferCmdHandler,
   CreateOfferCmdHandler,
   DepositCommitCmdHandler,
   GetDepositCommitQueryHandler,
   GetOfferDetailQueryHandler,
   ListOfferQueryHandler,
+  RejectOfferCmdHandler,
 } from "./usecase";
 
 /**
@@ -49,6 +51,8 @@ export const setupOfferHexagon = (
     listingRepository,
     outboxRepo,
   );
+  const rejectCmdHandler = new RejectOfferCmdHandler(offerRepository);
+  const cancelCmdHandler = new CancelOfferCmdHandler(offerRepository);
   const getDetailQueryHandler = new GetOfferDetailQueryHandler(
     offerRepository,
   );
@@ -70,6 +74,8 @@ export const setupOfferHexagon = (
     listQueryHandler,
     depositCommitCmdHandler,
     getDepositCommitQueryHandler,
+    rejectCmdHandler,
+    cancelCmdHandler,
   );
 
   // Wire routes and return router

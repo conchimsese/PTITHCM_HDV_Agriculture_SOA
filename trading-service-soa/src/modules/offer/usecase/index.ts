@@ -14,6 +14,8 @@ import {
 } from "../interface";
 import { CreateOfferCmdHandler } from "./create-offer";
 import { AcceptOfferCmdHandler } from "./accept-offer";
+import { RejectOfferCmdHandler } from "./reject-offer";
+import { CancelOfferCmdHandler } from "./cancel-offer";
 import { GetOfferDetailQueryHandler } from "./get-offer-detail";
 import { ListOfferQueryHandler } from "./list-offer";
 import { DepositCommitCmdHandler } from "./deposit-commit";
@@ -21,6 +23,8 @@ import { GetDepositCommitQueryHandler } from "./get-deposit-commit";
 
 export * from "./create-offer";
 export * from "./accept-offer";
+export * from "./reject-offer";
+export * from "./cancel-offer";
 export * from "./get-offer-detail";
 export * from "./list-offer";
 export * from "./deposit-commit";
@@ -33,6 +37,8 @@ export * from "./get-deposit-commit";
 export class OfferUseCase implements IOfferUseCase {
   private readonly createCmdHandler: CreateOfferCmdHandler;
   private readonly acceptCmdHandler: AcceptOfferCmdHandler;
+  private readonly rejectCmdHandler: RejectOfferCmdHandler;
+  private readonly cancelCmdHandler: CancelOfferCmdHandler;
   private readonly getDetailQueryHandler: GetOfferDetailQueryHandler;
   private readonly listQueryHandler: ListOfferQueryHandler;
   private readonly depositCommitCmdHandler: DepositCommitCmdHandler;
@@ -53,6 +59,8 @@ export class OfferUseCase implements IOfferUseCase {
       listingRepository,
       outboxRepository,
     );
+    this.rejectCmdHandler = new RejectOfferCmdHandler(offerRepository);
+    this.cancelCmdHandler = new CancelOfferCmdHandler(offerRepository);
     this.getDetailQueryHandler = new GetOfferDetailQueryHandler(
       offerRepository,
     );
@@ -79,6 +87,20 @@ export class OfferUseCase implements IOfferUseCase {
     offerId: string,
   ): Promise<OfferResponseDTO> {
     return this.acceptCmdHandler.execute({ farmerId, offerId });
+  }
+
+  async rejectOffer(
+    farmerId: string,
+    offerId: string,
+  ): Promise<OfferResponseDTO> {
+    return this.rejectCmdHandler.execute({ farmerId, offerId });
+  }
+
+  async cancelOffer(
+    traderId: string,
+    offerId: string,
+  ): Promise<OfferResponseDTO> {
+    return this.cancelCmdHandler.execute({ traderId, offerId });
   }
 
   async getOffer(

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ListingStatus } from '@agri/contracts';
 import { useSession } from '../../../shared/hooks/useAuth';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
 import { useListings } from '../hooks/useListings';
 import './trading.css';
@@ -52,7 +53,7 @@ export function MyListingsPage() {
       <div className="farmer-metrics-row">
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">Tổng bài đăng</span>
@@ -61,7 +62,7 @@ export function MyListingsPage() {
         </div>
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            ⚖️
+            <UiIcon name="scale" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">Tổng sản lượng</span>
@@ -70,7 +71,7 @@ export function MyListingsPage() {
         </div>
         <div className="metric-card">
           <span className="metric-icon" aria-hidden="true">
-            📢
+            <UiIcon name="listings" size={22} />
           </span>
           <div className="metric-content">
             <span className="metric-label">Đang mở nhận báo giá</span>
@@ -108,7 +109,7 @@ export function MyListingsPage() {
       ) : isError ? (
         <div className="error-panel" role="alert">
           <span className="error-icon" aria-hidden="true">
-            ⚠️
+            <UiIcon name="disputes" size={24} />
           </span>
           <h3>Không thể tải danh sách bài đăng</h3>
           <p>{error?.message || 'Có lỗi kết nối máy chủ.'}</p>
@@ -119,7 +120,7 @@ export function MyListingsPage() {
       ) : !data || data.items.length === 0 ? (
         <div className="empty-panel">
           <span className="empty-icon" aria-hidden="true">
-            🌾
+            <UiIcon name="rice" size={28} />
           </span>
           <h3>Bạn chưa có bài đăng nào {statusFilter ? `ở trạng thái ${statusFilter}` : ''}</h3>
           <p>Đăng bài bán lúa để kết nối với các thương lái gần bạn và nhận báo giá thu mua.</p>
@@ -155,10 +156,10 @@ export function MyListingsPage() {
 
                 return (
                   <tr key={item.listingId}>
-                    <td>
+                    <td data-label="Giống lúa">
                       <div className="table-produce-cell">
                         <span className="rice-cell-icon" aria-hidden="true">
-                          🌾
+                          <UiIcon name="rice" size={18} />
                         </span>
                         <div>
                           <strong>{item.seedType}</strong>
@@ -166,16 +167,18 @@ export function MyListingsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="price-cell">{formatVND(item.expectedPrice)}</td>
-                    <td>{formatYield(item.estimatedYield)}</td>
-                    <td>{formatArea(item.area)}</td>
-                    <td>
+                    <td className="price-cell" data-label="Giá mong muốn">
+                      {formatVND(item.expectedPrice)}
+                    </td>
+                    <td data-label="Sản lượng">{formatYield(item.estimatedYield)}</td>
+                    <td data-label="Diện tích">{formatArea(item.area)}</td>
+                    <td data-label="Trạng thái">
                       <span className={`status-pill ${s.className}`}>{s.label}</span>
                     </td>
-                    <td className="coords-cell">
+                    <td className="coords-cell" data-label="Tọa độ">
                       {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
                     </td>
-                    <td className="align-right">
+                    <td className="align-right" data-label="Thao tác">
                       <div className="table-actions">
                         <Link to={`/bai-dang/${item.listingId}`} className="table-btn view">
                           Chi tiết

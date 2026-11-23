@@ -9,6 +9,7 @@ import {
   subscribeSession,
 } from '@agri/api-client';
 import { authApi, queryClient } from '../../../shared/api/runtime';
+import { UiIcon } from '../../../shared/ui/UiIcon';
 import { GoogleSignIn } from '../components/GoogleSignIn';
 import './auth.css';
 
@@ -172,7 +173,7 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
       <aside className="auth-story">
         <Link to="/dang-nhap" className="brand">
           <span className="brand-mark" aria-hidden="true">
-            ❧
+            <UiIcon name="rice" size={24} />
           </span>
           <span>
             Ruộng Lúa Việt<small>KẾT NỐI GIÁ TRỊ NÔNG NGHIỆP</small>
@@ -187,9 +188,15 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
           </h1>
           <p>Nơi nhà nông và thương lái gặp nhau, cùng xây dựng một mùa vụ bền vững.</p>
           <div className="story-features">
-            <span>✓ Kết nối trực tiếp</span>
-            <span>✓ Giao dịch minh bạch</span>
-            <span>✓ Đồng hành mỗi mùa vụ</span>
+            <span>
+              <UiIcon name="check" size={15} /> Kết nối trực tiếp
+            </span>
+            <span>
+              <UiIcon name="check" size={15} /> Giao dịch minh bạch
+            </span>
+            <span>
+              <UiIcon name="check" size={15} /> Đồng hành mỗi mùa vụ
+            </span>
           </div>
         </div>
         <div className="field-art" aria-hidden="true">
@@ -197,14 +204,22 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
           <div className="hill hill-back" />
           <div className="hill hill-front" />
           <div className="field-lines" />
-          <span className="rice rice-one">❧</span>
-          <span className="rice rice-two">❧</span>
-          <span className="rice rice-three">❧</span>
+          <span className="rice rice-one">
+            <UiIcon name="rice" size={18} />
+          </span>
+          <span className="rice rice-two">
+            <UiIcon name="rice" size={18} />
+          </span>
+          <span className="rice rice-three">
+            <UiIcon name="rice" size={18} />
+          </span>
         </div>
         <p className="story-footer">Từ cánh đồng Việt, đến những cơ hội mới.</p>
       </aside>
       <section className="auth-main" aria-label={register ? 'Đăng ký tài khoản' : 'Đăng nhập'}>
-        <div className="mobile-brand">❧ Ruộng Lúa Việt</div>
+        <div className="mobile-brand">
+          <UiIcon name="rice" size={18} /> Ruộng Lúa Việt
+        </div>
         <div className="auth-card">
           <div className="card-kicker">
             <span /> NÔNG NGHIỆP KẾT NỐI
@@ -218,7 +233,7 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
                   ? 'Sẵn sàng kết nối!'
                   : register
                     ? 'Bắt đầu mùa vụ mới'
-                    : 'Chào mừng trở lại!'}
+                    : 'Đăng nhập máy chủ'}
           </h2>
           <p className="auth-description">
             {session
@@ -226,18 +241,9 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
               : verificationEmail
                 ? `Nhập mã 6 chữ số được gửi đến ${verificationEmail}. Mã có hiệu lực trong 10 phút.`
                 : register
-                  ? 'Tạo tài khoản để cùng phát triển nông nghiệp Việt.'
-                  : 'Đăng nhập để tiếp tục hành trình cùng Ruộng Lúa Việt.'}
+                  ? 'Tạo tài khoản trên máy chủ để cùng phát triển nông nghiệp Việt.'
+                  : 'Đăng nhập bằng tài khoản đã đăng ký trên hệ thống Ruộng Lúa Việt.'}
           </p>
-          {import.meta.env.DEV &&
-            ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
-            !register &&
-            !verificationEmail && (
-              <div className="alert alert-success" role="note">
-                Chế độ demo trên máy: nongdan.demo / thuonglai.demo / admin.demo, mật khẩu chung{' '}
-                <strong>demo123</strong>. Dữ liệu minh họa, không kết nối tài khoản thật.
-              </div>
-            )}
           {error && (
             <div className="alert alert-error" role="alert">
               {error}
@@ -253,7 +259,9 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
               <Link className="primary-button button-link" to="/tai-khoan">
                 Đến hồ sơ cá nhân →
               </Link>
-              <span className="success-icon">✓</span>
+              <span className="success-icon" aria-hidden="true">
+                <UiIcon name="check" size={24} />
+              </span>
               <p>
                 Tài khoản{' '}
                 {session.role === 'FARMER'
@@ -310,11 +318,15 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
                           <div className="role-options" aria-label="Vai trò tài khoản">
                             <label>
                               <input type="radio" name="role" value="FARMER" defaultChecked />
-                              <span>♧ Nhà nông</span>
+                              <span>
+                                <UiIcon name="farmer" size={16} /> Nhà nông
+                              </span>
                             </label>
                             <label>
                               <input type="radio" name="role" value="TRADER" />
-                              <span>⇄ Thương lái</span>
+                              <span>
+                                <UiIcon name="trader" size={16} /> Thương lái
+                              </span>
                             </label>
                           </div>
                           <label className="form-field">
@@ -435,6 +447,53 @@ function AuthScreen({ mode }: { mode: 'login' | 'register' }) {
                       {register ? 'Đăng nhập' : 'Đăng ký ngay'}
                     </Link>
                   </p>
+                  {import.meta.env.DEV &&
+                    ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+                    !register && (
+                      <details className="demo-login-box">
+                        <summary className="demo-login-summary">
+                          <span>Xem thử giao diện cục bộ (Demo trình duyệt)</span>
+                          <UiIcon name="chevron" size={16} className="demo-chevron" />
+                        </summary>
+                        <p className="demo-login-hint">
+                          Chỉ dùng dữ liệu giả lập trên trình duyệt, không kết nối hoặc lưu vào máy
+                          chủ thực. Tài khoản demo gõ tay: nongdan.demo / thuonglai.demo /
+                          admin.demo (mật khẩu <strong>demo123</strong>).
+                        </p>
+                        <div className="demo-login-buttons">
+                          <button
+                            type="button"
+                            className="demo-role-btn farmer"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('FARMER'));
+                            }}
+                          >
+                            Mở bản xem thử Nông dân (Demo)
+                          </button>
+                          <button
+                            type="button"
+                            className="demo-role-btn trader"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('TRADER'));
+                            }}
+                          >
+                            Mở bản xem thử Thương lái (Demo)
+                          </button>
+                          <button
+                            type="button"
+                            className="demo-role-btn"
+                            onClick={() => {
+                              queryClient.clear();
+                              setSession(createDemoSession('ADMIN'));
+                            }}
+                          >
+                            Mở bản xem thử Quản trị (Demo)
+                          </button>
+                        </div>
+                      </details>
+                    )}
                 </>
               )}
             </>

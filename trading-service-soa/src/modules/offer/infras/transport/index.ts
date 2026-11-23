@@ -15,11 +15,13 @@ import {
 } from "@share/transport/http-server";
 import {
   AcceptOfferCommand,
+  CancelOfferCommand,
   CreateOfferCommand,
   DepositCommitCommand,
   GetDepositCommitQuery,
   GetOfferDetailQuery,
   ListOfferQuery,
+  RejectOfferCommand,
 } from "@modules/offer/interface";
 import {
   OfferCondDTOSchema,
@@ -57,6 +59,14 @@ export class OfferHTTPService {
     private readonly getDepositCommitQueryHandler?: IQueryHandler<
       GetDepositCommitQuery,
       DepositCommitResult
+    >,
+    private readonly rejectCmdHandler?: ICommandHandler<
+      RejectOfferCommand,
+      OfferResponseDTO
+    >,
+    private readonly cancelCmdHandler?: ICommandHandler<
+      CancelOfferCommand,
+      OfferResponseDTO
     >,
   ) {}
 
@@ -99,6 +109,62 @@ export class OfferHTTPService {
         offerId,
       };
       const result = await this.acceptCmdHandler.execute(cmd);
+      sendOk(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/v1/offers/:offerId/reject
+   * Auth: Bearer JWT, Role: FARMER (listing owner)
+   */
+  async rejectOfferAPI(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requester = res.locals.requester as Requester;
+      const offerId = Array.isArray(req.params.offerId)
+        ? req.params.offerId[0]
+        : req.params.offerId;
+      if (!offerId) {
+        throw AppError.from(ErrInvalidRequest, 400)
+          .withCode("VALIDATION_ERROR")
+          .withLog("offerId is required");
+      }
+      if (!this.rejectCmdHandler) {
+        throw new Error("rejectCmdHandler not injected");
+      }
+      const result = await this.rejectCmdHandler.execute({
+        farmerId: requester.sub,
+        offerId,
+      });
+      sendOk(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/v1/offers/:offerId/cancel
+   * Auth: Bearer JWT, Role: TRADER (offer creator)
+   */
+  async cancelOfferAPI(req: Request, res: Response, next: NextFunction) {
+    try {
+      const requester = res.locals.requester as Requester;
+      const offerId = Array.isArray(req.params.offerId)
+        ? req.params.offerId[0]
+        : req.params.offerId;
+      if (!offerId) {
+        throw AppError.from(ErrInvalidRequest, 400)
+          .withCode("VALIDATION_ERROR")
+          .withLog("offerId is required");
+      }
+      if (!this.cancelCmdHandler) {
+        throw new Error("cancelCmdHandler not injected");
+      }
+      const result = await this.cancelCmdHandler.execute({
+        traderId: requester.sub,
+        offerId,
+      });
       sendOk(res, result);
     } catch (error) {
       next(error);
@@ -290,6 +356,22 @@ export function setupOfferRoutes(
     mdlFactory.auth,
     farmerOnly,
     httpService.acceptOfferAPI.bind(httpService),
+  );
+
+  // POST /api/v1/offers/:offerId/reject — FARMER only
+  router.post(
+    "/offers/:offerId/reject",
+    mdlFactory.auth,
+    farmerOnly,
+    httpService.rejectOfferAPI.bind(httpService),
+  );
+
+  // POST /api/v1/offers/:offerId/cancel — TRADER only
+  router.post(
+    "/offers/:offerId/cancel",
+    mdlFactory.auth,
+    traderOnly,
+    httpService.cancelOfferAPI.bind(httpService),
   );
 
   // GET /api/v1/offers/:offerId — Participants only

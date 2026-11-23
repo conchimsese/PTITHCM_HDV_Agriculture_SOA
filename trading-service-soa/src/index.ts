@@ -22,10 +22,25 @@ import { OutboxRelay } from '@share/outbox/relay';
 dotenvConfig();
 
 (async () => {
-  // 1. Verify database connection
+  // 1. Verify database connection & apply idempotent schema upgrades
   try {
     await prisma.$connect();
     console.log('[db] PostgreSQL connection established successfully.');
+    await prisma.$executeRawUnsafe(
+      `ALTER TYPE "OfferStatus" ADD VALUE IF NOT EXISTS 'REJECTED'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TYPE "OfferStatus" ADD VALUE IF NOT EXISTS 'CANCELLED'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE listings ADD COLUMN IF NOT EXISTS images TEXT[] NOT NULL DEFAULT '{}'`,
+    );
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE offers ADD COLUMN IF NOT EXISTS offered_price DECIMAL(18, 2) NOT NULL DEFAULT 0`,
+    );
+    await prisma.$executeRawUnsafe(
+      `UPDATE offers o SET offered_price = l.expected_price FROM listings l WHERE o.listing_id = l.listing_id AND o.offered_price = 0`,
+    );
   } catch (error) {
     console.error('[db] Failed to connect to PostgreSQL:', error);
     process.exit(1);

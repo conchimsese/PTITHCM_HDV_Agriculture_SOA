@@ -1,36 +1,38 @@
-import { Link, Navigate, Outlet } from 'react-router-dom';
-import { setSession } from '@agri/api-client';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAccount } from '../hooks/useAccount';
-import { authApi, queryClient } from '../api/runtime';
 import './services.css';
+
 export function ServiceLayout() {
   const session = useAccount();
-  if (!session?.tokens) return <Navigate to="/dang-nhap" replace />;
+  const { pathname } = useLocation();
+  const demoChat =
+    session?.isDemo &&
+    session.role !== 'ADMIN' &&
+    (pathname === '/chat' || pathname.startsWith('/chat/'));
+
+  if (!session) return <Navigate to="/dang-nhap" replace />;
+
+  if (!session.tokens && !demoChat) {
+    return (
+      <section className="service-app">
+        <div className="panel">
+          <h1>Chế độ xem thử cục bộ</h1>
+          <p>
+            Hợp đồng, tiền cọc mô phỏng và tranh chấp yêu cầu phiên đăng nhập máy chủ thực. Vui lòng
+            đăng xuất chế độ thử và đăng nhập tài khoản để sử dụng đầy đủ.
+          </p>
+          <div className="actions">
+            <Link to="/">Về tổng quan</Link>
+            <Link to="/dang-nhap">Đăng nhập máy chủ</Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <div className="service-app">
-      <header>
-        <Link className="brand" to="/chat">
-          Ruộng Lúa Việt <small>Kết nối mùa vàng</small>
-        </Link>
-        <nav>
-          <Link to="/chat">Tin nhắn</Link>
-          <Link to="/payments">Hợp đồng & cọc</Link>
-        </nav>
-        <button
-          onClick={() => {
-            const token = session.tokens?.refreshToken;
-            if (token) void authApi.logout(token).catch(() => undefined);
-            setSession(null);
-            queryClient.clear();
-          }}
-        >
-          Đăng xuất
-        </button>
-      </header>
-      <main>
-        <Outlet />
-      </main>
-      <footer>Trao đổi rõ ràng · Giao dịch an tâm</footer>
+      <Outlet />
     </div>
   );
 }

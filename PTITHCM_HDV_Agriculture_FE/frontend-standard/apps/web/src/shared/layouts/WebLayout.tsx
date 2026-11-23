@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { UiIcon } from '../ui/UiIcon';
+import { useEffect, useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { modulesForRole, roleLabels } from '@agri/contracts';
 import { useLogout, useSession } from '../hooks/useAuth';
+import { useUnreadCount } from '../../features/notifications/hooks/useNotifications';
 import './web-layout.css';
 
 const modulePathMap: Record<string, string> = {
@@ -14,181 +16,259 @@ const modulePathMap: Record<string, string> = {
   costs: '/chi-phi',
   chat: '/chat',
   contracts: '/payments',
-  deposits: '/payments',
-  disputes: '/payments',
+  deposits: '/payments?view=deposits',
+  disputes: '/payments?view=disputes',
   notifications: '/thong-bao',
   profile: '/tai-khoan',
   accounts: '/quan-ly-tai-khoan',
 };
 
-const moduleIconMap: Record<string, string> = {
-  dashboard: '📊',
-  marketplace: '🛒',
-  listings: '🌾',
-  offers: '🏷️',
-  plots: '🏞️',
-  journal: '📖',
-  costs: '💰',
-  chat: '💬',
-  contracts: '📜',
-  deposits: '🔒',
-  disputes: '⚖️',
-  notifications: '🔔',
-  profile: '👤',
-  accounts: '👥',
+function isModuleActive(id: string, role: string, pathname: string, search: string): boolean {
+  if (id === 'dashboard') return pathname === '/';
+  if (id === 'marketplace') {
+    if (pathname.startsWith('/thi-truong')) return true;
+    return (
+      role === 'TRADER' &&
+      pathname.startsWith('/bai-dang/') &&
+      !pathname.startsWith('/bai-dang/tao-moi') &&
+      !pathname.endsWith('/bao-gia')
+    );
+  }
+  if (id === 'listings') return pathname.startsWith('/bai-dang') && !pathname.endsWith('/bao-gia');
+  if (id === 'offers') return pathname.startsWith('/bao-gia') || pathname.endsWith('/bao-gia');
+  if (id === 'plots') return pathname.startsWith('/ruong-vu');
+  if (id === 'journal') return pathname.startsWith('/nhat-ky');
+  if (id === 'costs') return pathname.startsWith('/chi-phi');
+  if (id === 'chat') return pathname.startsWith('/chat');
+  if (id === 'notifications') return pathname.startsWith('/thong-bao');
+  if (id === 'profile')
+    return pathname.startsWith('/tai-khoan') || pathname.startsWith('/nguoi-dung');
+  if (id === 'accounts') return pathname.startsWith('/quan-ly-tai-khoan');
+  if (id === 'contracts' || id === 'deposits' || id === 'disputes') {
+    if (!pathname.startsWith('/payments')) return false;
+    if (pathname.startsWith('/payments/disputes/')) return id === 'disputes';
+    if (pathname.startsWith('/payments/contracts/') || pathname === '/payments/new') {
+      return id === 'contracts';
+    }
+    const view = new URLSearchParams(search).get('view');
+    if (view === 'deposits') return id === 'deposits';
+    if (view === 'disputes') return id === 'disputes';
+    return role === 'ADMIN' ? id === 'disputes' : id === 'contracts';
+  }
+  return false;
+}
+
+const primaryByRole = {
+  FARMER: ['dashboard', 'plots', 'listings', 'chat', 'profile'],
+  TRADER: ['dashboard', 'marketplace', 'offers', 'chat', 'profile'],
+  ADMIN: ['dashboard', 'accounts', 'disputes', 'notifications', 'profile'],
 };
+
+const primaryLabels: Record<string, string> = {
+  dashboard: 'Trang chủ',
+  plots: 'Ruộng lúa',
+  listings: 'Bán lúa',
+  marketplace: 'Bảng tin',
+  offers: 'Báo giá',
+  chat: 'Tin nhắn',
+  profile: 'Hồ sơ',
+  accounts: 'Quản lý TK',
+  disputes: 'Tranh chấp',
+  notifications: 'Thông báo',
+};
+
+const sidebarGroups = [
+  {
+    key: 'farming',
+    label: 'Canh tác',
+    ids: ['dashboard', 'plots', 'journal', 'costs'],
+  },
+  {
+    key: 'trade',
+    label: 'Mua bán & Hợp đồng',
+    ids: ['marketplace', 'listings', 'offers', 'chat', 'contracts', 'deposits', 'disputes'],
+  },
+  {
+    key: 'account',
+    label: 'Tài khoản & Hệ thống',
+    ids: ['accounts', 'notifications', 'profile'],
+  },
+] as const;
 
 export function WebLayout() {
   const session = useSession();
   const logout = useLogout();
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const unread = useUnreadCount();
+  const { pathname, search } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  if (!session) {
-    // If not logged in, layout will be handled by RoleGuard / Route redirects
-    return <Outlet />;
-  }
+  const role = session?.role;
+  const modules = session
+    ? modulesForRole(session.role).filter(({ id }) => {
+        if (!modulePathMap[id]) return false;
+        if (!session.isDemo || id === 'dashboard' || (id === 'chat' && session.role !== 'ADMIN')) {
+          return true;
+        }
+        if (session.role === 'FARMER')
+          return ['plots', 'journal', 'costs', 'listings'].includes(id);
+        return session.role === 'TRADER' && ['marketplace', 'offers'].includes(id);
+      })
+    : [];
+  const activeModule = role
+    ? modules.find(({ id }) => isModuleActive(id, role, pathname, search))
+    : undefined;
+  const pageTitle = activeModule
+    ? `Ruộng Lúa Việt · ${activeModule.label}`
+    : 'Ruộng Lúa Việt — Gắn mùa vụ · Nối giao thương';
 
-  const role = session.role;
-  const userModules = modulesForRole(role);
-  const homePath = '/';
+  useEffect(() => {
+    document.title = pageTitle;
+  }, [pageTitle]);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname, search]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
+
+  if (!session || !role) return <Outlet />;
+
+  const isFullFrameChat = pathname.startsWith('/chat') && role !== 'ADMIN';
+  const unreadCount = !session.isDemo ? (unread.data?.count ?? 0) : 0;
+  const primary = primaryByRole[role].filter((id) => modules.some((item) => item.id === id));
+
+  const primaryLinks = primary.map((id) => {
+    const active = isModuleActive(id, role, pathname, search);
+    return (
+      <Link
+        key={id}
+        to={modulePathMap[id]}
+        aria-current={active ? 'page' : undefined}
+        className={active ? 'active' : undefined}
+      >
+        <UiIcon name={id} />
+        <span>{primaryLabels[id]}</span>
+        {id === 'notifications' && unreadCount > 0 && (
+          <span className="nav-unread-pill" aria-label={`${unreadCount} thông báo chưa đọc`}>
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
+      </Link>
+    );
+  });
 
   return (
-    <div className={`web-layout ${mobileMenuOpen ? 'mobile-open' : ''}`}>
-      {/* Mobile Backdrop */}
-      {mobileMenuOpen && (
-        <div
-          className="layout-backdrop"
-          onClick={() => setMobileMenuOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Sidebar Navigation */}
-      <aside className="layout-sidebar" aria-label="Menu chính">
-        <div className="sidebar-brand">
-          <Link to={homePath} className="brand-logo" onClick={() => setMobileMenuOpen(false)}>
+    <div className={isFullFrameChat ? 'workspace-shell workspace-shell--chat' : 'workspace-shell'}>
+      <a className="skip-link" href="#main-content">
+        Chuyển đến nội dung chính
+      </a>
+      <header className="workspace-top">
+        <div className="workspace-top-inner">
+          <Link className="workspace-brand" to="/">
             <span className="brand-leaf" aria-hidden="true">
-              ❧
+              <UiIcon name="rice" size={22} />
             </span>
-            <div className="brand-text">
-              <span className="brand-title">Ruộng Lúa Việt</span>
-              <span className="brand-subtitle">KẾT NỐI GIÁ TRỊ NÔNG NGHIỆP</span>
+            <div>
+              <strong>Ruộng Lúa Việt</strong>
+              <small>Gắn mùa vụ · Nối giao thương</small>
             </div>
           </Link>
-        </div>
-
-        {/* User Card */}
-        <div className="sidebar-user">
-          <div className="user-avatar" aria-hidden="true">
-            {role === 'FARMER' ? '🌾' : role === 'TRADER' ? '💼' : '🛡️'}
-          </div>
-          <div className="user-info">
-            <span className="user-role-badge badge-{role.toLowerCase()}">{roleLabels[role]}</span>
-            <span className="user-id" title={session.accountId}>
-              ID: {session.accountId.slice(0, 8)}…
+          <nav className="workspace-top-nav" aria-label="Điều hướng chính">
+            {primaryLinks}
+          </nav>
+          <div className="workspace-session">
+            {!session.isDemo && (
+              <Link
+                className="workspace-bell"
+                to="/thong-bao"
+                aria-label={unreadCount > 0 ? `Thông báo (${unreadCount} chưa đọc)` : 'Thông báo'}
+                title="Thông báo"
+              >
+                <UiIcon name="notifications" />
+                {unreadCount > 0 && (
+                  <span className="nav-unread-pill">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </Link>
+            )}
+            <span className={session.isDemo ? 'workspace-role-pill demo' : 'workspace-role-pill'}>
+              {roleLabels[role]}
+              {session.isDemo && ' · Demo trình duyệt'}
             </span>
+            <button
+              type="button"
+              className="workspace-menu-button"
+              aria-expanded={menuOpen}
+              aria-controls="workspace-menu"
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              {menuOpen ? 'Đóng' : 'Menu'}
+            </button>
           </div>
         </div>
-
-        {/* Navigation Items */}
-        <nav className="sidebar-nav">
-          <ul>
-            {userModules
-              .filter(
-                (item) =>
-                  !session.isDemo ||
-                  [
-                    'dashboard',
-                    ...(role === 'FARMER'
-                      ? ['listings', 'plots', 'journal', 'costs']
-                      : role === 'TRADER'
-                        ? ['marketplace', 'offers']
-                        : []),
-                  ].includes(item.id),
-              )
-              .map((item) => {
-                const path = modulePathMap[item.id] || `/${item.id}`;
-                const icon = moduleIconMap[item.id] || '•';
-                const isCurrent =
-                  location.pathname === path ||
-                  (path !== '/' && location.pathname.startsWith(`${path}/`));
-
-                return (
-                  <li key={item.id}>
-                    <NavLink
-                      to={path}
-                      className={({ isActive }) =>
-                        `nav-item ${isActive || isCurrent ? 'active' : ''}`
-                      }
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span className="nav-icon" aria-hidden="true">
-                        {icon}
-                      </span>
-                      <span className="nav-label">{item.label}</span>
-                    </NavLink>
-                  </li>
-                );
-              })}
-          </ul>
-        </nav>
-
-        {/* Sidebar Footer with Demo Switcher & Logout */}
-        <div className="sidebar-footer">
-          <button
-            type="button"
-            className="sidebar-logout-btn"
-            onClick={() => void logout()}
-            aria-label="Đăng xuất khỏi hệ thống"
-          >
-            <span aria-hidden="true">🚪</span> Đăng xuất
+      </header>
+      <div
+        className={isFullFrameChat ? 'workspace-frame workspace-frame--chat' : 'workspace-frame'}
+      >
+        {menuOpen && (
+          <div
+            className="workspace-menu-backdrop"
+            aria-hidden="true"
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
+        <aside id="workspace-menu" className={menuOpen ? 'workspace-menu open' : 'workspace-menu'}>
+          <nav aria-label="Khu vực làm việc">
+            <h2>Khu vực làm việc</h2>
+            {sidebarGroups.map((group) => {
+              const groupModules = modules.filter((m) =>
+                (group.ids as readonly string[]).includes(m.id),
+              );
+              if (groupModules.length === 0) return null;
+              return (
+                <div key={group.key} className="workspace-menu-group">
+                  <p className="workspace-menu-group-label">{group.label}</p>
+                  {groupModules.map(({ id, label }) => {
+                    const active = isModuleActive(id, role, pathname, search);
+                    return (
+                      <Link
+                        key={id}
+                        to={modulePathMap[id]}
+                        aria-current={active ? 'page' : undefined}
+                        className={active ? 'active' : undefined}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <UiIcon name={id} />
+                        <span>{label}</span>
+                        {id === 'notifications' && unreadCount > 0 && (
+                          <span className="nav-unread-pill">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </nav>
+          <button type="button" onClick={() => void logout()}>
+            Đăng xuất
           </button>
-        </div>
-      </aside>
-
-      {/* Main Body */}
-      <div className="layout-body">
-        {/* Top Header Bar */}
-        <header className="layout-header">
-          <button
-            type="button"
-            className="mobile-toggle-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Mở trình đơn"
-          >
-            ☰
-          </button>
-
-          <div className="header-breadcrumbs">
-            <span className="header-platform">Nông Nghiệp Số</span>
-            <span className="header-separator">/</span>
-            <span className="header-role">{roleLabels[role]}</span>
-          </div>
-
-          <div className="header-actions">
-            {role === 'FARMER' && (
-              <Link to="/bai-dang/tao-moi" className="header-action-btn primary">
-                + Đăng bài bán lúa
-              </Link>
-            )}
-            {role === 'TRADER' && (
-              <Link to="/thi-truong" className="header-action-btn secondary">
-                🔍 Xem thị trường
-              </Link>
-            )}
-            <div className="header-status-indicator">
-              <span className="status-dot online" />{' '}
-              {session.isDemo ? 'Chế độ demo' : 'Phiên đăng nhập'}
-            </div>
-          </div>
-        </header>
-
-        {/* Page Content Viewport */}
-        <main className="layout-content">
+        </aside>
+        <main id="main-content" className="workspace-content" tabIndex={-1}>
           <Outlet />
         </main>
       </div>
+      <nav className="workspace-mobile-nav" aria-label="Điều hướng điện thoại">
+        {primaryLinks}
+      </nav>
     </div>
   );
 }

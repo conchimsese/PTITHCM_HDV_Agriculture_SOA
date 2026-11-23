@@ -1,6 +1,7 @@
 import { PrismaClient, Listing as PrismaListing, Prisma } from "@prisma/client";
 import { AppError } from "@share/app-error";
 import { PagingDTO } from "@share/model/paging";
+import { formatMoney, haversineDistanceKm } from "@share/util";
 import { IListingRepository } from "@modules/listing/interface";
 import {
   DepositCommitResult,
@@ -38,6 +39,7 @@ export class PrismaListingRepository implements IListingRepository {
         latitude:                 listing.latitude,
         longitude:                listing.longitude,
         expectedPrice:            listing.expectedPrice,
+        images:                   listing.images ?? [],
         status:                   listing.status,
         winningContractId:        listing.winningContractId,
         winningPaymentTrackingId: listing.winningPaymentTrackingId,
@@ -63,6 +65,38 @@ export class PrismaListingRepository implements IListingRepository {
     if (cond.farmerId) where.farmerId = cond.farmerId;
     if (cond.status) where.status = cond.status;
     if (cond.seedType) where.seedType = { contains: cond.seedType, mode: 'insensitive' };
+
+    if (cond.latitude !== undefined && cond.longitude !== undefined) {
+      const targetLat = cond.latitude;
+      const targetLon = cond.longitude;
+      const rows = await this.prisma.listing.findMany({
+        where,
+        orderBy: [
+          { createdAt: 'desc' },
+          { listingId: 'desc' },
+        ],
+      });
+      const sorted = rows
+        .map((row) => ({
+          row,
+          dist: haversineDistanceKm(
+            targetLat,
+            targetLon,
+            this.decimalToNumber(row.latitude),
+            this.decimalToNumber(row.longitude),
+          ),
+        }))
+        .sort((a, b) => {
+          if (a.dist !== b.dist) return a.dist - b.dist;
+          return b.row.listingId.localeCompare(a.row.listingId);
+        });
+      const start = paging.page * paging.size;
+      const sliced = sorted.slice(start, start + paging.size).map((entry) => entry.row);
+      return {
+        items: sliced.map((r) => this.toDomain(r)),
+        total: sorted.length,
+      };
+    }
 
     const [rows, total] = await Promise.all([
       this.prisma.listing.findMany({
@@ -238,7 +272,8 @@ export class PrismaListingRepository implements IListingRepository {
       area:                     this.decimalToNumber(row.area),
       latitude:                 this.decimalToNumber(row.latitude),
       longitude:                this.decimalToNumber(row.longitude),
-      expectedPrice:            row.expectedPrice.toString(),
+      expectedPrice:            formatMoney(row.expectedPrice),
+      images:                   Array.isArray(row.images) ? row.images : [],
       status:                   row.status as ListingStatus,
       winningContractId:        row.winningContractId,
       winningPaymentTrackingId: row.winningPaymentTrackingId,
