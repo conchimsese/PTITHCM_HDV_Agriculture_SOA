@@ -29,6 +29,7 @@ Thumbs.db
 # Local AI agent rules & sync config
 /.agents/
 /.claude/
+/.codex/
 /AGENTS.md
 /CLAUDE.md
 /MAP.md
