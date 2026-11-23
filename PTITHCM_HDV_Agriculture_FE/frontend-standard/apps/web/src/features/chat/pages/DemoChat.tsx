@@ -1,5 +1,5 @@
 import { UiIcon } from '../../../shared/ui/UiIcon';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useParams } from 'react-router-dom';
 
 const rooms = [
@@ -23,27 +23,53 @@ const rooms = [
 
 export function DemoChat({ accountId }: { accountId: string }) {
   const { conversationId } = useParams();
+  const [roomSearch, setRoomSearch] = useState('');
+  const searchNeedle = roomSearch.trim().toLowerCase();
+  const filteredRooms = searchNeedle
+    ? rooms.filter(
+        (item) =>
+          item.crop.toLowerCase().includes(searchNeedle) ||
+          item.offer.toLowerCase().includes(searchNeedle),
+      )
+    : rooms;
   const room = rooms.find((item) => item.id === conversationId);
   return (
     <>
-      <h1>Tin nhắn</h1>
-      <p className="muted">Cuộc trò chuyện mẫu · Tin nhắn được lưu trong phiên trình duyệt.</p>
+      <h1 className="visually-hidden">Tin nhắn</h1>
       <div className={room ? 'messenger has-room' : 'messenger'}>
         <aside className="panel messenger-list">
-          <h2>
-            <UiIcon name="chat" /> Cuộc trò chuyện
-          </h2>
-          {rooms.map((item) => (
-            <NavLink className="room-link" key={item.id} to={'/chat/' + item.id}>
-              <span className="avatar-circle" aria-hidden="true">
-                {item.crop.slice(0, 2).toUpperCase()}
-              </span>
-              <span style={{ minWidth: 0 }}>
-                <strong>Lúa {item.crop}</strong>
-                <small>Báo giá {item.offer}</small>
-              </span>
-            </NavLink>
-          ))}
+          <div className="messenger-list-header">
+            <h2>
+              <UiIcon name="chat" size={18} /> Tin nhắn
+              <span className="messenger-count-pill tabular-nums">{rooms.length}</span>
+            </h2>
+          </div>
+          <div className="messenger-list-search">
+            <UiIcon name="search" size={15} />
+            <label>
+              <span className="visually-hidden">Tìm cuộc trò chuyện theo giống lúa hoặc mã</span>
+              <input
+                type="search"
+                placeholder="Tìm giống lúa hoặc mã…"
+                value={roomSearch}
+                onChange={(e) => setRoomSearch(e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="messenger-list-items">
+            {filteredRooms.map((item) => (
+              <NavLink className="room-link" key={item.id} to={'/chat/' + item.id}>
+                <span className="avatar-circle" aria-hidden="true">
+                  {item.crop.slice(0, 2).toUpperCase()}
+                </span>
+                <span style={{ minWidth: 0 }}>
+                  <strong>Lúa {item.crop}</strong>
+                  <small>Báo giá {item.offer} · Mẫu trình duyệt</small>
+                </span>
+              </NavLink>
+            ))}
+            {filteredRooms.length === 0 && <p className="muted">Không tìm thấy phòng phù hợp.</p>}
+          </div>
         </aside>
         {room ? (
           <>
@@ -100,6 +126,11 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
     }
   });
   const [draft, setDraft] = useState('');
+  const messagesRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [room.id, messages.length]);
   return (
     <section className="panel messenger-thread">
       <Link className="messenger-back" to="/chat">
@@ -120,7 +151,7 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
           Minh họa cục bộ
         </span>
       </div>
-      <div className="messages" role="log">
+      <div className="messages" role="log" ref={messagesRef}>
         <article className="bubble">{room.opening}</article>
         <article className="bubble mine">{room.reply}</article>
         <article className="bubble">{room.followUp}</article>
@@ -145,7 +176,7 @@ function DemoThread({ storageKey, room }: { storageKey: string; room: (typeof ro
           <span className="visually-hidden">Tin nhắn</span>
           <textarea
             maxLength={2000}
-            rows={2}
+            rows={1}
             placeholder="Nhập tin nhắn minh họa…"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}

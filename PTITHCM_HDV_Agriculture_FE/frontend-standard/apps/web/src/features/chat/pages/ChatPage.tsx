@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useChatRoom, useConversations } from '../hooks/useConversations';
@@ -28,8 +28,18 @@ function ConnectedChat() {
   const rooms = useConversations();
   const offerIdParam = searchParams.get('offerId');
   const [offerRetryCount, setOfferRetryCount] = useState(0);
+  const [roomSearch, setRoomSearch] = useState('');
 
   const roomItems = rooms.data?.pages.flatMap((p) => p.data) ?? [];
+  const searchNeedle = roomSearch.trim().toLowerCase();
+  const filteredRooms = searchNeedle
+    ? roomItems.filter(
+        (room) =>
+          room.offerId.toLowerCase().includes(searchNeedle) ||
+          room.conversationId.toLowerCase().includes(searchNeedle) ||
+          formatOfferLabel(room.offerId).toLowerCase().includes(searchNeedle),
+      )
+    : roomItems;
   const matchedRoom = offerIdParam
     ? roomItems.find((item) => item.offerId === offerIdParam)
     : undefined;
@@ -60,72 +70,91 @@ function ConnectedChat() {
 
   return (
     <>
-      <h1>Trao đổi mùa vụ</h1>
-      <p className="muted">Phòng trò chuyện được mở sau khi đề nghị được chấp nhận.</p>
+      <h1 className="visually-hidden">Trao đổi mùa vụ</h1>
       {session?.role === 'ADMIN' ? (
         <p>Chỉ người tham gia mới được xem cuộc trò chuyện.</p>
       ) : (
         <div className={conversationId ? 'messenger has-room' : 'messenger'}>
           <aside className="panel messenger-list">
-            <div
-              className="actions"
-              style={{ justifyContent: 'space-between', marginBottom: '12px' }}
-            >
-              <h2 style={{ margin: 0 }}>Cuộc trò chuyện</h2>
+            <div className="messenger-list-header">
+              <h2>
+                <UiIcon name="chat" size={18} /> Tin nhắn
+                <span className="messenger-count-pill tabular-nums">{roomItems.length}</span>
+              </h2>
               <button
                 type="button"
-                className="secondary"
+                className="secondary messenger-refresh-btn"
+                aria-label="Làm mới danh sách"
+                title="Làm mới danh sách"
                 disabled={rooms.isFetching}
                 onClick={() => void rooms.refetch()}
               >
-                {rooms.isFetching ? 'Đang tải…' : 'Làm mới'}
+                <UiIcon name="refresh" size={16} />
               </button>
+            </div>
+            <div className="messenger-list-search">
+              <UiIcon name="search" size={15} />
+              <label>
+                <span className="visually-hidden">Tìm cuộc trò chuyện theo mã Offer</span>
+                <input
+                  type="search"
+                  placeholder="Tìm theo mã Offer…"
+                  value={roomSearch}
+                  onChange={(e) => setRoomSearch(e.target.value)}
+                />
+              </label>
             </div>
             {offerIdParam && !conversationId && !matchedRoom && (
               <p className="muted" role="status">
                 Đang tìm phòng trò chuyện cho báo giá #{formatOfferLabel(offerIdParam)}…
               </p>
             )}
-            {rooms.isPending && <p>Đang tải…</p>}
-            {rooms.error && (
-              <p className="error">
-                {rooms.error.message}
-                <button onClick={() => void rooms.refetch()}>Thử lại</button>
-              </p>
-            )}
-            {roomItems.map((room) => (
-              <NavLink
-                className="room-link"
-                key={room.conversationId}
-                to={'/chat/' + room.conversationId}
-              >
-                <span className="avatar-circle" aria-hidden="true">
-                  {room.offerId.slice(-2).toUpperCase()}
-                </span>
-                <span style={{ minWidth: 0 }}>
-                  <strong>#{formatOfferLabel(room.offerId)}</strong>
-                  <small className="tabular-nums">
-                    {room.contractId ? 'Đã có hợp đồng' : `${room.unreadCount ?? 0} chưa đọc`}
-                  </small>
-                </span>
-              </NavLink>
-            ))}
-            {rooms.data?.pages[0]?.data.length === 0 && (
-              <p>Chưa có cuộc trò chuyện. Hãy chấp nhận đề nghị để mở phòng.</p>
-            )}
-            {rooms.hasNextPage && (
-              <button
-                disabled={rooms.isFetchingNextPage}
-                onClick={() => void rooms.fetchNextPage()}
-              >
-                Xem thêm
-              </button>
-            )}
+            <div className="messenger-list-items">
+              {rooms.isPending && <p>Đang tải…</p>}
+              {rooms.error && (
+                <p className="error">
+                  {rooms.error.message}
+                  <button onClick={() => void rooms.refetch()}>Thử lại</button>
+                </p>
+              )}
+              {filteredRooms.map((room) => (
+                <NavLink
+                  className="room-link"
+                  key={room.conversationId}
+                  to={'/chat/' + room.conversationId}
+                >
+                  <span className="avatar-circle" aria-hidden="true">
+                    {room.offerId.slice(-2).toUpperCase()}
+                  </span>
+                  <span style={{ minWidth: 0 }}>
+                    <strong>#{formatOfferLabel(room.offerId)}</strong>
+                    <small className="tabular-nums">
+                      {room.contractId ? 'Đã có hợp đồng' : `${room.unreadCount ?? 0} chưa đọc`}
+                    </small>
+                  </span>
+                </NavLink>
+              ))}
+              {roomItems.length > 0 && filteredRooms.length === 0 && (
+                <p className="muted">Không tìm thấy phòng phù hợp.</p>
+              )}
+              {rooms.data?.pages[0]?.data.length === 0 && (
+                <p>Chưa có cuộc trò chuyện. Hãy chấp nhận đề nghị để mở phòng.</p>
+              )}
+              {rooms.hasNextPage && (
+                <button
+                  disabled={rooms.isFetchingNextPage}
+                  onClick={() => void rooms.fetchNextPage()}
+                >
+                  Xem thêm
+                </button>
+              )}
+            </div>
           </aside>
           {conversationId ? (
             <Room key={session?.accountId + conversationId} id={conversationId} />
           ) : (
             <section className="panel messenger-empty">
+              <UiIcon name="chat" />
               <h2>Cùng thống nhất vụ mùa tiếp theo</h2>
               <p>Chọn cuộc trò chuyện để xem tin nhắn và hợp đồng.</p>
             </section>
@@ -166,6 +195,12 @@ function Room({ id }: { id: string }) {
     (a, b) =>
       Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.messageId.localeCompare(b.messageId),
   );
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const lastMessageId = messages.at(-1)?.messageId;
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [id, lastMessageId]);
   const isLive = connection === 'Đã kết nối';
   const isRetrying = connection.includes('Đang') || connection.includes('thử lại');
   const roomOfferLabel = room.data ? formatOfferLabel(room.data.offerId) : formatOfferLabel(id);
@@ -210,7 +245,7 @@ function Room({ id }: { id: string }) {
             Tin nhắn cũ hơn
           </button>
         )}
-        <div className="messages">
+        <div className="messages" ref={messagesRef}>
           {history.isPending ? (
             <p>Đang tải…</p>
           ) : messages.length === 0 ? (
@@ -280,7 +315,7 @@ function Room({ id }: { id: string }) {
             <label className="composer-input-label">
               <span className="visually-hidden">Tin nhắn</span>
               <textarea
-                rows={2}
+                rows={1}
                 maxLength={2000}
                 placeholder="Nhập tin nhắn trao đổi (Enter để gửi, Shift+Enter xuống dòng)…"
                 value={text}

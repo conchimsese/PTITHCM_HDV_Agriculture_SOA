@@ -100,6 +100,7 @@ export function WebLayout() {
   if (!session) return <Outlet />;
 
   const role = session.role;
+  const isFullFrameChat = pathname.startsWith('/chat') && role !== 'ADMIN';
   const unreadCount = !session.isDemo ? (unread.data?.count ?? 0) : 0;
   const modules = modulesForRole(role).filter(({ id }) => {
     if (!modulePathMap[id]) return false;
@@ -130,7 +131,7 @@ export function WebLayout() {
   });
 
   return (
-    <div className="workspace-shell">
+    <div className={isFullFrameChat ? 'workspace-shell workspace-shell--chat' : 'workspace-shell'}>
       <a className="skip-link" href="#main-content">
         Chuyển đến nội dung chính
       </a>
@@ -178,7 +179,9 @@ export function WebLayout() {
           </div>
         </div>
       </header>
-      <div className="workspace-frame">
+      <div
+        className={isFullFrameChat ? 'workspace-frame workspace-frame--chat' : 'workspace-frame'}
+      >
         {menuOpen && (
           <div
             className="workspace-menu-backdrop"

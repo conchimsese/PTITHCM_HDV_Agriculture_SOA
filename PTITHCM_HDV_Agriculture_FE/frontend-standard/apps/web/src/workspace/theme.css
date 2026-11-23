@@ -204,6 +204,9 @@ time,
     grid-template-columns: minmax(208px, 245px) minmax(0, 1fr);
     gap: 22px;
   }
+  .workspace-frame.workspace-frame--chat {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .season-dashboard {
     grid-template-columns: minmax(0, 1fr) minmax(244px, 285px);
     gap: 22px;
