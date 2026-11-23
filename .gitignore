@@ -25,3 +25,12 @@ coverage/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local AI agent rules & sync config
+/.agents/
+/.claude/
+/AGENTS.md
+/CLAUDE.md
+/MAP.md
+/docs/specs/
+/scripts/sync-ai-config.py
