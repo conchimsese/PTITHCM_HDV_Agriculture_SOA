@@ -6,6 +6,7 @@ import { getRiceArtwork } from '../utils/riceArtwork';
 import {
   formatArea,
   formatDistance,
+  formatPricePerKg,
   formatVND,
   formatYield,
 } from '../../../shared/utils/formatters';
@@ -52,6 +53,7 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
   const [imageBroken, setImageBroken] = useState(false);
   const artwork = getRiceArtwork(listing.seedType);
   const hasUploadedImage = Boolean(listing.images?.length) && !imageBroken;
+  const pricePerKg = formatPricePerKg(listing.expectedPrice, listing.estimatedYield);
 
   return (
     <article className="listing-card">
@@ -62,7 +64,9 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
           </span>
           <div>
             <h3 className="produce-title">{listing.seedType}</h3>
-            <span className="farmer-ref">Nông dân: {listing.farmerId.slice(0, 8)}…</span>
+            <span className="farmer-ref">
+              Nhà nông xác thực · #{listing.farmerId.slice(-4).toUpperCase()}
+            </span>
           </div>
         </div>
         <span className={`status-pill ${currentStatus.className}`}>{currentStatus.label}</span>
@@ -90,7 +94,10 @@ export function ListingCard({ listing, userCoords, currentUserId, onMakeOffer }:
       )}
       <div className="card-price-section">
         <span className="price-label">Giá mong muốn:</span>
-        <span className="price-value">{formatVND(listing.expectedPrice)}</span>
+        <div className="card-price-stack">
+          <span className="price-value tabular-nums">{formatVND(listing.expectedPrice)}</span>
+          {pricePerKg && <span className="price-per-kg tabular-nums">({pricePerKg})</span>}
+        </div>
       </div>
 
       <div className="card-specs-grid">

@@ -160,6 +160,11 @@
 .farm-primary-link:hover {
   background: #164735;
 }
+.farm-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .farm-chip-btn {
   min-height: 44px;
   padding: 8px 14px;

@@ -6,6 +6,7 @@ import {
   type NotificationFilters,
 } from '@agri/contracts';
 import { UiIcon } from '../../../shared/ui/UiIcon';
+import { humanizeSystemText } from '../../../shared/utils/formatters';
 import { UserError, UserLayout } from '../../users/components/UserLayout';
 
 function notificationCategoryIcon(type: string, referenceType?: string | null): string {
@@ -22,6 +23,7 @@ function notificationCategoryIcon(type: string, referenceType?: string | null): 
   return 'notifications';
 }
 import {
+  useMarkPageRead,
   useMarkRead,
   useNotification,
   useNotifications,
@@ -42,6 +44,10 @@ export function NotificationsPage() {
   };
   const list = useNotifications(filters);
   const count = useUnreadCount();
+  const markPage = useMarkPageRead();
+  const unreadIdsOnPage = (list.data?.items ?? [])
+    .filter((item) => item.status === 'UNREAD')
+    .map((item) => item.notificationId);
   function change(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -59,15 +65,32 @@ export function NotificationsPage() {
           </h1>
           <p>Không bỏ lỡ những cập nhật quan trọng của bạn.</p>
         </div>
-        <button
-          disabled={list.isFetching || count.isFetching}
-          onClick={() => {
-            void list.refetch();
-            void count.refetch();
-          }}
-        >
-          <UiIcon name="refresh" size={16} /> Làm mới
-        </button>
+        <div className="notification-header-actions">
+          {unreadIdsOnPage.length > 0 && (
+            <button
+              type="button"
+              className="user-primary"
+              disabled={markPage.isPending}
+              onClick={() => markPage.mutate(unreadIdsOnPage)}
+            >
+              <UiIcon name="check" size={16} />
+              {markPage.isPending
+                ? 'Đang cập nhật…'
+                : `Đánh dấu đã đọc (${unreadIdsOnPage.length})`}
+            </button>
+          )}
+          <button
+            type="button"
+            className="notification-refresh-btn"
+            disabled={list.isFetching || count.isFetching}
+            onClick={() => {
+              void list.refetch();
+              void count.refetch();
+            }}
+          >
+            <UiIcon name="refresh" size={16} /> Làm mới
+          </button>
+        </div>
       </header>
       {count.error && <UserError error={count.error} retry={() => void count.refetch()} />}
       <section className="notification-filters">
@@ -135,12 +158,12 @@ export function NotificationsPage() {
                     </span>
                     <div className="notification-preview">
                       <div className="notification-title">
-                        <strong>{item.title}</strong>
+                        <strong>{humanizeSystemText(item.title)}</strong>
                         {item.status === 'UNREAD' && (
                           <span className="notification-dot" aria-label="Chưa đọc" />
                         )}
                       </div>
-                      <p>{item.content}</p>
+                      <p>{humanizeSystemText(item.content)}</p>
                       <small>{notificationDate(item.createdAt)}</small>
                     </div>
                   </Link>
@@ -208,9 +231,9 @@ function NotificationDetail({ id, back }: { id: string; back: string }) {
               <UiIcon name={notificationCategoryIcon(item.type, item.referenceType)} size={24} />
             </span>
             <p className="user-badge">{notificationTypeLabels[item.type]}</p>
-            <h2>{item.title}</h2>
+            <h2>{humanizeSystemText(item.title)}</h2>
             <time dateTime={item.createdAt}>{notificationDate(item.createdAt)}</time>
-            <p className="notification-content">{item.content}</p>
+            <p className="notification-content">{humanizeSystemText(item.content)}</p>
             {item.status === 'UNREAD' ? (
               <button
                 className="user-primary"

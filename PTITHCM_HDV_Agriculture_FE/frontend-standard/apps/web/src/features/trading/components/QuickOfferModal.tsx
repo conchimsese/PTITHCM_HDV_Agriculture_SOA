@@ -4,7 +4,12 @@ import { Link } from 'react-router-dom';
 import type { CreateOfferRequest, ListingDTO, OfferDTO } from '@agri/contracts';
 import { tradingApi } from '../../../shared/api/runtime';
 import { UiIcon } from '../../../shared/ui/UiIcon';
-import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
+import {
+  formatArea,
+  formatPricePerKg,
+  formatVND,
+  formatYield,
+} from '../../../shared/utils/formatters';
 
 interface QuickOfferModalProps {
   listing: ListingDTO | null;
@@ -22,7 +27,8 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
   // Sync price input when listing changes
   useEffect(() => {
     if (listing) {
-      setOfferedPriceInput(listing.expectedPrice);
+      const rounded = Math.round(parseFloat(listing.expectedPrice) || 0);
+      setOfferedPriceInput(rounded > 0 ? String(rounded) : listing.expectedPrice);
     }
   }, [listing]);
 
@@ -70,7 +76,7 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
     if (!offeredPriceInput) return;
     const num = parseFloat(offeredPriceInput);
     if (!isNaN(num) && num > 0) {
-      setOfferedPriceInput(num.toFixed(2));
+      setOfferedPriceInput(String(Math.round(num)));
     }
   };
 
@@ -101,6 +107,13 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
     expectedNum > 0 && offeredNum > 0
       ? Math.round(((offeredNum - expectedNum) / expectedNum) * 100)
       : 0;
+  const expectedPerKg = formatPricePerKg(listing.expectedPrice, listing.estimatedYield);
+  const offeredPerKg = formatPricePerKg(offeredPriceInput, listing.estimatedYield);
+  const applyPriceRatio = (ratio: number) => {
+    if (expectedNum <= 0) return;
+    setOfferedPriceInput(String(Math.round(expectedNum * ratio)));
+    setErrorMessage(null);
+  };
 
   return (
     <div className="modal-backdrop" onClick={handleClose}>
@@ -143,7 +156,7 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
               </div>
               <div className="summary-row">
                 <span>Trạng thái:</span>
-                <span className="status-badge pending">Đang chờ nông dân duyệt (PENDING)</span>
+                <span className="status-badge pending">Đang chờ nông dân phản hồi</span>
               </div>
             </div>
             <div className="modal-actions">
@@ -183,6 +196,9 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
                 <div className="recap-price-block">
                   <span className="recap-price-label">Giá mong muốn của nông dân:</span>
                   <span className="recap-price">{formatVND(listing.expectedPrice)}</span>
+                  {expectedPerKg && (
+                    <span className="price-per-kg tabular-nums">({expectedPerKg})</span>
+                  )}
                 </div>
               </div>
               <div className="recap-details">
@@ -208,24 +224,49 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
               <label className="field-label" htmlFor="offeredPrice">
                 Mức giá bạn đề xuất thu mua (VND) <span className="required">*</span>
               </label>
+              <div className="quick-offer-chips" role="group" aria-label="Điều chỉnh nhanh mức giá">
+                <button
+                  type="button"
+                  className="quick-offer-chip"
+                  onClick={() => applyPriceRatio(0.98)}
+                >
+                  -2%
+                </button>
+                <button
+                  type="button"
+                  className="quick-offer-chip"
+                  onClick={() => applyPriceRatio(1)}
+                >
+                  Bằng giá nông dân
+                </button>
+                <button
+                  type="button"
+                  className="quick-offer-chip"
+                  onClick={() => applyPriceRatio(1.02)}
+                >
+                  +2%
+                </button>
+              </div>
               <div className="price-input-wrapper">
                 <input
                   id="offeredPrice"
                   type="text"
+                  inputMode="numeric"
                   value={offeredPriceInput}
                   onChange={handlePriceChange}
                   onBlur={handlePriceBlur}
-                  placeholder="Ví dụ: 4500000.00"
+                  placeholder="Ví dụ: 90000000"
                   required
-                  className="form-input"
+                  className="form-input tabular-nums"
                 />
                 <span className="currency-suffix">VND</span>
               </div>
 
               {offeredPriceInput && (
                 <div className="price-feedback-row">
-                  <span className="preview-tag">
+                  <span className="preview-tag tabular-nums">
                     Quy đổi: <strong>{formatVND(offeredPriceInput)}</strong>
+                    {offeredPerKg ? ` (${offeredPerKg})` : ''}
                   </span>
                   {priceDiffPct === 0 ? (
                     <span className="diff-badge equal">Bằng giá nông dân chào</span>
@@ -245,9 +286,9 @@ export function QuickOfferModal({ listing, isOpen, onClose, onSuccess }: QuickOf
             <p className="form-note">
               <UiIcon name="info" size={16} />{' '}
               <span>
-                Báo giá bắt đầu ở trạng thái <strong>PENDING</strong> không cần nạp tiền cọc trước.
-                Nếu nông dân đồng ý, hệ thống mở phòng Chat để hai bên trao đổi chi tiết. Bạn có thể
-                hủy đề xuất bất cứ lúc nào khi còn đang chờ duyệt.
+                Báo giá được gửi ở trạng thái <strong>chờ nông dân xem xét</strong>, chưa cần nạp
+                tiền cọc trước. Khi nông dân đồng ý, hệ thống sẽ mở phòng trò chuyện để hai bên trao
+                đổi. Bạn có thể hủy đề xuất bất cứ lúc nào khi chưa được chốt.
               </span>
             </p>
 

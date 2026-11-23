@@ -1,3 +1,23 @@
+.notification-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.notification-header-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.notification-refresh-btn {
+  background: #fff;
+  border: 1px solid #dce6dd;
+  color: #246b45;
+}
 .notification-count {
   display: inline-grid;
   place-items: center;

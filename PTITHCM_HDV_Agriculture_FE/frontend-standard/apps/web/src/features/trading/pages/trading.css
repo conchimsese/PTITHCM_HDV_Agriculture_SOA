@@ -451,6 +451,13 @@
   transition: border-color 0.15s;
 }
 
+select.form-input {
+  height: auto;
+  min-height: 48px;
+  padding-block: 10px;
+  line-height: 1.4;
+}
+
 .form-input.monospace {
   font-family: monospace;
   font-size: 13px;
@@ -462,9 +469,12 @@
   box-shadow: 0 0 0 3px rgba(36, 107, 69, 0.15);
 }
 
-.field-hint {
-  font-size: 12px;
-  color: #607267;
+.trading-page .field-hint,
+.listing-form .field-hint {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #526459;
 }
 
 .price-input-wrapper {
@@ -706,8 +716,31 @@
 
 .form-actions {
   display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 10px;
+}
+
+.form-actions .submit-btn,
+.form-actions .cancel-btn {
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.form-actions .submit-btn {
+  flex: 1 1 220px;
+}
+
+.form-actions .cancel-btn {
+  flex: 0 0 auto;
+  min-width: 104px;
+}
+
+.detail-price-per-kg {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #526459;
 }
 
 /* ─── Listing Detail Page ────────────────────────────────────────── */

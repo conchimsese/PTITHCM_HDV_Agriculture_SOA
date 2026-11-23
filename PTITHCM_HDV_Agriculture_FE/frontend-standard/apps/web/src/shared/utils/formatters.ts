@@ -69,3 +69,59 @@ export function formatDate(isoString: string): string {
     return isoString;
   }
 }
+
+/**
+ * Format estimated VND price per kg: "~8.036 đ/kg"
+ */
+export function formatPricePerKg(totalPrice: string | number, estimatedYieldKg: number): string {
+  const price = typeof totalPrice === 'string' ? parseFloat(totalPrice) : totalPrice;
+  if (
+    !Number.isFinite(price) ||
+    price <= 0 ||
+    !Number.isFinite(estimatedYieldKg) ||
+    estimatedYieldKg <= 0
+  ) {
+    return '';
+  }
+  const perKg = Math.round(price / estimatedYieldKg);
+  if (perKg <= 0) return '';
+  return `~${perKg.toLocaleString('vi-VN')} đ/kg`;
+}
+
+const SYSTEM_TERM_MAP: Record<string, string> = {
+  PENDING_DEPOSIT: 'Chờ đặt cọc',
+  RELEASABLE: 'Có thể giải phóng',
+  UNDER_REVIEW: 'Đang xem xét',
+  COMPLETED: 'Hoàn tất',
+  CANCELLED: 'Đã hủy',
+  REFUNDED: 'Đã hoàn tiền',
+  ACTIVE: 'Đang hiệu lực',
+  DELIVERY_ISSUE: 'Chậm lịch giao nhận',
+  QUALITY_MISMATCH: 'Sai chất lượng thỏa thuận',
+  QUANTITY_SHORTAGE: 'Thiếu sản lượng thỏa thuận',
+  PAYMENT_ISSUE: 'Vấn đề thanh toán / tiền cọc',
+  FARMER_VIOLATION: 'Bên bán vi phạm thỏa thuận',
+  NO_VIOLATION: 'Không có vi phạm',
+  REFUND_TO_TRADER: 'Hoàn cọc cho thương lái',
+  PENDING: 'Đang chờ duyệt',
+  ACCEPTED: 'Đã chấp nhận',
+  REJECTED: 'Đã từ chối',
+  OPEN: 'Đang mở',
+  LOCKED: 'Đã đặt cọc',
+  SOLD: 'Đã bán',
+};
+
+const SYSTEM_TERM_PATTERN = new RegExp(`\\b(${Object.keys(SYSTEM_TERM_MAP).join('|')})\\b`, 'g');
+
+/**
+ * Replace raw backend enum codes and ".00" decimal strings with friendly Vietnamese.
+ */
+export function humanizeSystemText(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/\b(\d{4,})\.00(?:\s*(?:VND|VNĐ|đ|₫))?\b/g, (_, digits: string) =>
+      formatVND(Number(digits)),
+    )
+    .replace(SYSTEM_TERM_PATTERN, (code) => SYSTEM_TERM_MAP[code] ?? code)
+    .replace(/\boffer\b/g, 'báo giá');
+}

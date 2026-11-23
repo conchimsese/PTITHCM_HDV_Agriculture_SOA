@@ -95,10 +95,10 @@ function ConnectedChat() {
             <div className="messenger-list-search">
               <UiIcon name="search" size={15} />
               <label>
-                <span className="visually-hidden">Tìm cuộc trò chuyện theo mã Offer</span>
+                <span className="visually-hidden">Tìm cuộc trò chuyện theo mã giao dịch</span>
                 <input
                   type="search"
-                  placeholder="Tìm theo mã Offer…"
+                  placeholder="Tìm theo mã giao dịch…"
                   value={roomSearch}
                   onChange={(e) => setRoomSearch(e.target.value)}
                 />
@@ -106,7 +106,7 @@ function ConnectedChat() {
             </div>
             {offerIdParam && !conversationId && !matchedRoom && (
               <p className="muted" role="status">
-                Đang tìm phòng trò chuyện cho báo giá #{formatOfferLabel(offerIdParam)}…
+                Đang tìm phòng trò chuyện cho giao dịch #{offerIdParam.slice(-4).toUpperCase()}…
               </p>
             )}
             <div className="messenger-list-items">
@@ -122,12 +122,13 @@ function ConnectedChat() {
                   className="room-link"
                   key={room.conversationId}
                   to={'/chat/' + room.conversationId}
+                  title={`Mã báo giá: ${room.offerId}`}
                 >
                   <span className="avatar-circle" aria-hidden="true">
                     {room.offerId.slice(-2).toUpperCase()}
                   </span>
                   <span style={{ minWidth: 0 }}>
-                    <strong>#{formatOfferLabel(room.offerId)}</strong>
+                    <strong>Giao dịch #{room.offerId.slice(-4).toUpperCase()}</strong>
                     <small className="tabular-nums">
                       {room.contractId ? 'Đã có hợp đồng' : `${room.unreadCount ?? 0} chưa đọc`}
                     </small>
@@ -170,6 +171,7 @@ function Room({ id }: { id: string }) {
   const cache = useQueryClient();
   const [text, setText] = useState('');
   const [copied, setCopied] = useState(false);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const send = useMutation({
     mutationFn: () => chatApi.send(id, { messageType: 'TEXT', content: text }),
     onSuccess: () => {
@@ -203,7 +205,20 @@ function Room({ id }: { id: string }) {
   }, [id, lastMessageId]);
   const isLive = connection === 'Đã kết nối';
   const isRetrying = connection.includes('Đang') || connection.includes('thử lại');
-  const roomOfferLabel = room.data ? formatOfferLabel(room.data.offerId) : formatOfferLabel(id);
+  const shortTradeCode = (room.data?.offerId ?? id).slice(-4).toUpperCase();
+  const shortRoomCode = id.slice(-4).toUpperCase();
+  const quickReplies =
+    session?.role === 'FARMER'
+      ? [
+          'Lúa đã chín, tuần này cắt được ạ.',
+          'Mời anh xuống xem mẫu lúa ngoài đồng.',
+          'Chốt giá và ngày cân lúa nhé.',
+        ]
+      : [
+          'Bên em đồng ý mức giá, chốt lịch gặt nhé.',
+          'Anh gửi giúp em ảnh lúa thực tế mới nhất.',
+          'Mình soạn hợp đồng và đặt cọc giữ lô nhé.',
+        ];
 
   return (
     <>
@@ -217,8 +232,8 @@ function Room({ id }: { id: string }) {
               {(room.data?.offerId ?? id).slice(-2).toUpperCase()}
             </span>
             <div>
-              <h2>Trao đổi #{roomOfferLabel}</h2>
-              <small className="muted tabular-nums">Phòng #{formatOfferLabel(id)}</small>
+              <h2>Giao dịch #{shortTradeCode}</h2>
+              <small className="muted tabular-nums">Mã phòng #{shortRoomCode}</small>
             </div>
           </div>
           <span className={`connection-pill ${isLive ? 'is-live' : ''}`} role="status">
@@ -286,58 +301,77 @@ function Room({ id }: { id: string }) {
           )}
         </div>
         {room.data?.status === 'ACTIVE' && (
-          <form
-            className="composer-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (text.trim()) send.mutate();
-            }}
-          >
-            <label
-              className="composer-attach-btn"
-              title="Gửi ảnh nông sản hoặc chứng từ (PNG/JPG/WebP)"
+          <>
+            <div className="composer-quick-replies" role="group" aria-label="Mẫu tin nhắn nhanh">
+              {quickReplies.map((reply) => (
+                <button
+                  key={reply}
+                  type="button"
+                  className="composer-quick-chip"
+                  disabled={send.isPending || image.isPending}
+                  onClick={() => {
+                    setText(reply);
+                    composerRef.current?.focus();
+                  }}
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+            <form
+              className="composer-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (text.trim()) send.mutate();
+              }}
             >
-              <UiIcon name="camera" size={18} />
-              <span>{image.isPending ? 'Đang tải…' : 'Ảnh'}</span>
-              <input
-                className="visually-hidden"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                aria-label="Gửi ảnh nông sản hoặc chứng từ"
-                disabled={image.isPending || send.isPending}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) image.mutate(file);
-                  e.target.value = '';
-                }}
-              />
-            </label>
-            <label className="composer-input-label">
-              <span className="visually-hidden">Tin nhắn</span>
-              <textarea
-                rows={1}
-                maxLength={2000}
-                placeholder="Nhập tin nhắn trao đổi (Enter để gửi, Shift+Enter xuống dòng)…"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (text.trim() && !send.isPending && !image.isPending) send.mutate();
-                  }
-                }}
-                required
-              />
-            </label>
-            <button
-              type="submit"
-              className="composer-send-btn"
-              disabled={send.isPending || image.isPending || !text.trim()}
-            >
-              <UiIcon name="send" size={16} />
-              {send.isPending ? 'Đang gửi…' : 'Gửi'}
-            </button>
-          </form>
+              <label
+                className="composer-attach-btn"
+                title="Gửi ảnh nông sản hoặc chứng từ (PNG/JPG/WebP)"
+              >
+                <UiIcon name="camera" size={18} />
+                <span>{image.isPending ? 'Đang tải…' : 'Ảnh'}</span>
+                <input
+                  className="visually-hidden"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  aria-label="Gửi ảnh nông sản hoặc chứng từ"
+                  disabled={image.isPending || send.isPending}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) image.mutate(file);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              <label className="composer-input-label">
+                <span className="visually-hidden">Tin nhắn</span>
+                <textarea
+                  ref={composerRef}
+                  rows={1}
+                  maxLength={2000}
+                  placeholder="Nhắn tin trao đổi…"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (text.trim() && !send.isPending && !image.isPending) send.mutate();
+                    }
+                  }}
+                  required
+                />
+              </label>
+              <button
+                type="submit"
+                className="composer-send-btn"
+                disabled={send.isPending || image.isPending || !text.trim()}
+              >
+                <UiIcon name="send" size={16} />
+                {send.isPending ? 'Đang gửi…' : 'Gửi'}
+              </button>
+            </form>
+          </>
         )}
       </section>
       <aside className="panel messenger-details">
@@ -352,7 +386,7 @@ function Room({ id }: { id: string }) {
               </span>
               <div style={{ minWidth: 0 }}>
                 <strong style={{ display: 'block', color: '#164735' }}>
-                  Báo giá #{formatOfferLabel(room.data.offerId)}
+                  Giao dịch #{shortTradeCode}
                 </strong>
                 <button
                   type="button"
@@ -380,7 +414,7 @@ function Room({ id }: { id: string }) {
               </div>
               <div className="details-kv-row">
                 <span>Mã phòng</span>
-                <code>#{formatOfferLabel(id)}</code>
+                <code>#{shortRoomCode}</code>
               </div>
               <div className="details-kv-row">
                 <span>Hợp đồng</span>

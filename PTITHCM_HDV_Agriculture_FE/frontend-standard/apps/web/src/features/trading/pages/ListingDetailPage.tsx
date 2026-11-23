@@ -3,7 +3,12 @@ import { getRiceArtwork } from '../utils/riceArtwork';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useSession } from '../../../shared/hooks/useAuth';
 import { UiIcon } from '../../../shared/ui/UiIcon';
-import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
+import {
+  formatArea,
+  formatPricePerKg,
+  formatVND,
+  formatYield,
+} from '../../../shared/utils/formatters';
 import { QuickOfferModal } from '../components/QuickOfferModal';
 import { useListingDetail } from '../hooks/useListingDetail';
 import './trading.css';
@@ -60,17 +65,17 @@ export function ListingDetailPage() {
 
   const statusMap = {
     OPEN: {
-      label: 'Đang mở nhận báo giá (OPEN)',
+      label: 'Đang mở nhận báo giá',
       desc: 'Nông dân đang mở nhận đề xuất thu mua từ các thương lái.',
       className: 'status-open',
     },
     LOCKED: {
-      label: 'Đã nhận cọc độc quyền (LOCKED)',
+      label: 'Đã nhận cọc giữ chỗ',
       desc: 'Một thương lái đã nạp 5% tiền cọc cam kết thành công. Bài đăng tạm khóa.',
       className: 'status-locked',
     },
     SOLD: {
-      label: 'Đã hoàn tất bán (SOLD)',
+      label: 'Đã hoàn tất bán',
       desc: 'Hợp đồng đã hoàn thành nghiệm thu và bàn giao lúa thành công.',
       className: 'status-sold',
     },
@@ -82,9 +87,10 @@ export function ListingDetailPage() {
     className: '',
   };
 
-  // Yield per hectare metric
+  // Yield per hectare metric & price per kg estimate
   const yieldPerHa =
     listing.area > 0 ? ((listing.estimatedYield / listing.area) * 10000) / 1000 : 0;
+  const pricePerKg = formatPricePerKg(listing.expectedPrice, listing.estimatedYield);
 
   return (
     <div className="trading-page listing-detail-page">
@@ -163,7 +169,12 @@ export function ListingDetailPage() {
         <div className="detail-price-banner">
           <div className="price-block">
             <span className="price-tag-label">Giá kỳ vọng (toàn bộ sản lượng)</span>
-            <span className="price-tag-value">{formatVND(listing.expectedPrice)}</span>
+            <span className="price-tag-value tabular-nums">{formatVND(listing.expectedPrice)}</span>
+            {pricePerKg && (
+              <span className="detail-price-per-kg tabular-nums">
+                Đơn giá ước tính: {pricePerKg}
+              </span>
+            )}
           </div>
 
           <div className="cta-block">
@@ -268,19 +279,32 @@ export function ListingDetailPage() {
             </span>
             <div className="spec-card-text">
               <span className="spec-card-label">Chủ thửa ruộng (Nông dân)</span>
-              <span className="spec-card-value monospace">
-                {isOwner ? 'Chính bạn (Tài khoản của bạn)' : `${listing.farmerId.slice(0, 8)}…`}
+              <span className="spec-card-value">
+                {isOwner
+                  ? 'Chính bạn (Tài khoản của bạn)'
+                  : `Nhà nông xác thực · #${listing.farmerId.slice(-4).toUpperCase()}`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* References Snapshot Info */}
-        <div className="technical-snapshot-box">
-          <h4>Thông tin liên kết hệ thống (Snapshot)</h4>
-          <p className="snapshot-desc">
-            Dữ liệu giống, năng suất và tọa độ được Trading Service chụp snapshot tự động từ Farming
-            Service khi tạo bài đăng.
+        {/* Collapsible Technical Reference (Progressive Disclosure) */}
+        <details className="technical-snapshot-box">
+          <summary
+            style={{
+              cursor: 'pointer',
+              fontWeight: 650,
+              color: '#164735',
+              minHeight: '44px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            Thông tin đối chiếu mã ruộng &amp; mùa vụ (kỹ thuật)
+          </summary>
+          <p className="snapshot-desc" style={{ marginTop: '8px' }}>
+            Thông tin giống lúa, sản lượng dự kiến và tọa độ được lưu cố định theo thửa ruộng tại
+            thời điểm nông dân đăng bán.
           </p>
           <div className="snapshot-ids-row">
             <div className="id-tag">
@@ -292,7 +316,7 @@ export function ListingDetailPage() {
               <code>{listing.cropSeasonId}</code>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
       {/* Offer Submission Modal for Traders */}

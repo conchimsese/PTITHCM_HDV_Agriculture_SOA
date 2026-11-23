@@ -7,7 +7,7 @@ import { paymentsApi } from '../../../shared/api/modules';
 import { useAccount } from '../../../shared/hooks/useAccount';
 import { PrivateImage } from '../../../shared/ui/PrivateImage';
 import { UiIcon } from '../../../shared/ui/UiIcon';
-import { formatVND } from '../../../shared/utils/formatters';
+import { formatVND, humanizeSystemText } from '../../../shared/utils/formatters';
 
 function calcSimulatedDeposit5Percent(totalAmount: string): string {
   const clean = totalAmount.trim();
@@ -585,14 +585,16 @@ export function ContractPage() {
               }}
             >
               <label>
-                Mã lý do (tối đa 80 ký tự)
-                <input
-                  name="reason"
-                  required
-                  maxLength={80}
-                  defaultValue="DELIVERY_ISSUE"
-                  placeholder="Ví dụ: LATE_DELIVERY, QUALITY_MISMATCH"
-                />
+                Lý do tranh chấp
+                <select name="reason" required defaultValue="DELIVERY_ISSUE">
+                  <option value="DELIVERY_ISSUE">Chậm lịch thu hoạch / giao nhận lúa</option>
+                  <option value="QUALITY_MISMATCH">
+                    Chất lượng / độ ẩm lúa không đúng thỏa thuận
+                  </option>
+                  <option value="QUANTITY_SHORTAGE">Sản lượng cân thực tế lệch thỏa thuận</option>
+                  <option value="PAYMENT_ISSUE">Vấn đề tiền cọc / thanh toán</option>
+                  <option value="OTHER">Lý do khác</option>
+                </select>
               </label>
               <label>
                 Mô tả vấn đề phát sinh
@@ -882,15 +884,15 @@ export function DisputePage() {
           {d.outcome && (
             <>
               <dt>Kết quả xử lý</dt>
-              <dd>{d.outcome}</dd>
+              <dd>{humanizeSystemText(d.outcome)}</dd>
             </>
           )}
         </dl>
         <p style={{ whiteSpace: 'pre-wrap', marginTop: '14px' }}>{d.description}</p>
         {d.decision && (
           <div className="success-banner" style={{ marginTop: '12px' }}>
-            <strong>Quyết định chính thức ({d.decision.outcome}):</strong> {d.decision.reason} · Xử
-            lý cọc: {d.decision.depositDisposition}
+            <strong>Quyết định chính thức ({humanizeSystemText(d.decision.outcome)}):</strong>{' '}
+            {d.decision.reason} · Xử lý cọc: {humanizeSystemText(d.decision.depositDisposition)}
           </div>
         )}
       </section>
@@ -984,7 +986,7 @@ export function DisputePage() {
         <section className="panel">
           <h2>Tiếp nhận xem xét tranh chấp</h2>
           <p className="muted">
-            Chuyển hồ sơ sang trạng thái Đang xem xét (UNDER_REVIEW) để khóa phân công cho bạn.
+            Chuyển hồ sơ sang trạng thái Đang xem xét để khóa phân công cho bạn.
           </p>
           <form
             onSubmit={(e) => {

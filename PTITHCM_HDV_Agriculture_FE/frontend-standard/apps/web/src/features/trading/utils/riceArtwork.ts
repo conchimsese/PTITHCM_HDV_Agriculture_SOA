@@ -6,6 +6,9 @@ import riceSt25 from '../../../workspace/assets/rice_st25.svg';
 
 export function getRiceArtwork(seedType: string): { src: string; label: string } {
   const normalized = seedType.toLowerCase();
+  if (normalized.includes('st25') || normalized.includes('st 25')) {
+    return { src: riceSt25, label: 'Minh họa giống lúa ST25' };
+  }
   if (normalized.includes('om18') || normalized.includes('om 18')) {
     return { src: riceOm18, label: 'Minh họa giống lúa OM18' };
   }

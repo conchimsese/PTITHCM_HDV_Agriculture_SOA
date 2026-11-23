@@ -431,7 +431,7 @@
 .workspace-top {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 45;
   background: #fff;
   border-bottom: 1px solid #dce6dd;
 }
@@ -588,9 +588,26 @@
   gap: 3px;
 }
 .workspace-menu h2 {
-  margin: 3px 10px 10px;
+  margin: 4px 10px 8px;
   font-size: 14px;
   color: #164735;
+}
+.workspace-menu-group {
+  display: grid;
+  gap: 3px;
+}
+.workspace-menu-group + .workspace-menu-group {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #edf5ed;
+}
+.workspace-menu-group-label {
+  margin: 2px 12px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #526459;
 }
 .workspace-menu button,
 .workspace-menu-button {

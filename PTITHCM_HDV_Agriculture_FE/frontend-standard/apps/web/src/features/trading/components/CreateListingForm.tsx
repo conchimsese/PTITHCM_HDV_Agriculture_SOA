@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCreateListing } from '../hooks/useCreateListing';
-import { formatArea, formatVND, formatYield } from '../../../shared/utils/formatters';
+import {
+  formatArea,
+  formatPricePerKg,
+  formatVND,
+  formatYield,
+} from '../../../shared/utils/formatters';
 import { UiIcon } from '../../../shared/ui/UiIcon';
 import { tradingApi } from '../../../shared/api/runtime';
 import { useSession } from '../../../shared/hooks/useAuth';
@@ -97,7 +102,7 @@ export function CreateListingForm() {
     if (!priceInput) return;
     const num = parseFloat(priceInput);
     if (!isNaN(num) && num > 0) {
-      setPriceInput(num.toFixed(2));
+      setPriceInput(String(Math.round(num)));
     }
   };
 
@@ -364,7 +369,7 @@ export function CreateListingForm() {
                 alignItems: 'center',
               }}
             >
-              {isDemo ? 'Mã thửa ruộng & mùa vụ' : 'Nhập mã UUID thủ công (nâng cao)'}
+              {isDemo ? 'Mã thửa ruộng & mùa vụ' : 'Thông tin kỹ thuật (mã thửa & mùa vụ)'}
             </summary>
             <div style={{ display: 'grid', gap: '14px', paddingTop: '10px' }}>
               <label className="form-field">
@@ -500,32 +505,37 @@ export function CreateListingForm() {
             <div className="price-input-wrapper">
               <input
                 type="text"
+                inputMode="numeric"
                 name="expectedPrice"
                 value={priceInput}
                 onChange={handlePriceChange}
                 onBlur={handlePriceBlur}
-                placeholder="Ví dụ: 4500000.00"
+                placeholder="Ví dụ: 90000000"
                 required
-                className="form-input"
+                className="form-input tabular-nums"
               />
               <span className="currency-suffix">VND</span>
             </div>
             {priceInput && (
-              <div className="price-preview-pill">
+              <div className="price-preview-pill tabular-nums">
                 Hiển thị trên thị trường: <strong>{formatVND(priceInput)}</strong>
+                {activeSeason?.expectedYield != null &&
+                  formatPricePerKg(priceInput, Number(activeSeason.expectedYield)) && (
+                    <> ({formatPricePerKg(priceInput, Number(activeSeason.expectedYield))})</>
+                  )}
               </div>
             )}
             <span className="field-hint">
-              Nhập số tiền theo định dạng số thực dương (ví dụ: 4500000.00).
+              Nhập số tiền VNĐ cả lô lúa (ví dụ: 90000000 cho 90 triệu đồng).
             </span>
           </label>
 
           <div className="info-banner">
             <UiIcon name="info" size={18} className="info-icon" />
             <span>
-              Theo quy chuẩn hệ thống, bài đăng sau khi tạo sẽ ở trạng thái <strong>OPEN</strong> để
-              nhận báo giá từ thương lái. Nông dân có thể chấp nhận nhiều báo giá để cùng trao đổi,
-              và chỉ khóa độc quyền khi thương lái đặt cọc thành công.
+              Sau khi đăng bài, tin sẽ chuyển sang trạng thái <strong>đang mở nhận báo giá</strong>{' '}
+              để thương lái đề xuất giá thu mua. Nông dân có thể mở trò chuyện với nhiều thương lái,
+              và chỉ khóa lô lúa khi bên mua đặt cọc thành công.
             </span>
           </div>
 

@@ -7,6 +7,8 @@ import { QuickOfferModal } from '../components/QuickOfferModal';
 import { LOCATION_PRESETS, useGeolocation, useListings } from '../hooks/useListings';
 import './marketplace.css';
 
+const SEED_QUICK_FILTERS = ['', 'ST25', 'OM18', 'Đài Thơm 8', 'Jasmine 85', 'IR50404'] as const;
+
 export function MarketplacePage() {
   const session = useSession();
   const [page, setPage] = useState(0);
@@ -125,10 +127,10 @@ export function MarketplacePage() {
               value={statusFilter}
               onChange={handleStatusChange}
             >
-              <option value="OPEN">Đang mở (OPEN)</option>
+              <option value="OPEN">Đang mở nhận báo giá</option>
               <option value="">Tất cả trạng thái</option>
-              <option value="LOCKED">Đã cọc (LOCKED)</option>
-              <option value="SOLD">Đã bán (SOLD)</option>
+              <option value="LOCKED">Đã đặt cọc</option>
+              <option value="SOLD">Đã bán</option>
             </select>
           </div>
 
@@ -163,6 +165,27 @@ export function MarketplacePage() {
               </select>
             </div>
           </div>
+        </div>
+
+        {/* 1-tap Rice Variety Quick Filter Chips */}
+        <div className="seed-quick-chips" role="group" aria-label="Chọn nhanh giống lúa">
+          {SEED_QUICK_FILTERS.map((seed) => {
+            const isActive = seedTypeFilter.trim().toLowerCase() === seed.toLowerCase();
+            return (
+              <button
+                key={seed || 'ALL'}
+                type="button"
+                className={`seed-chip-btn ${isActive ? 'active' : ''}`}
+                aria-pressed={isActive}
+                onClick={() => {
+                  setSeedTypeFilter(seed);
+                  setPage(0);
+                }}
+              >
+                {seed || 'Tất cả giống'}
+              </button>
+            );
+          })}
         </div>
 
         {/* Location Status Banner */}

@@ -77,12 +77,53 @@ const primaryLabels: Record<string, string> = {
   notifications: 'Thông báo',
 };
 
+const sidebarGroups = [
+  {
+    key: 'farming',
+    label: 'Canh tác',
+    ids: ['dashboard', 'plots', 'journal', 'costs'],
+  },
+  {
+    key: 'trade',
+    label: 'Mua bán & Hợp đồng',
+    ids: ['marketplace', 'listings', 'offers', 'chat', 'contracts', 'deposits', 'disputes'],
+  },
+  {
+    key: 'account',
+    label: 'Tài khoản & Hệ thống',
+    ids: ['accounts', 'notifications', 'profile'],
+  },
+] as const;
+
 export function WebLayout() {
   const session = useSession();
   const logout = useLogout();
   const unread = useUnreadCount();
   const { pathname, search } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const role = session?.role;
+  const modules = session
+    ? modulesForRole(session.role).filter(({ id }) => {
+        if (!modulePathMap[id]) return false;
+        if (!session.isDemo || id === 'dashboard' || (id === 'chat' && session.role !== 'ADMIN')) {
+          return true;
+        }
+        if (session.role === 'FARMER')
+          return ['plots', 'journal', 'costs', 'listings'].includes(id);
+        return session.role === 'TRADER' && ['marketplace', 'offers'].includes(id);
+      })
+    : [];
+  const activeModule = role
+    ? modules.find(({ id }) => isModuleActive(id, role, pathname, search))
+    : undefined;
+  const pageTitle = activeModule
+    ? `Ruộng Lúa Việt · ${activeModule.label}`
+    : 'Ruộng Lúa Việt — Gắn mùa vụ · Nối giao thương';
+
+  useEffect(() => {
+    document.title = pageTitle;
+  }, [pageTitle]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -97,17 +138,10 @@ export function WebLayout() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [menuOpen]);
 
-  if (!session) return <Outlet />;
+  if (!session || !role) return <Outlet />;
 
-  const role = session.role;
   const isFullFrameChat = pathname.startsWith('/chat') && role !== 'ADMIN';
   const unreadCount = !session.isDemo ? (unread.data?.count ?? 0) : 0;
-  const modules = modulesForRole(role).filter(({ id }) => {
-    if (!modulePathMap[id]) return false;
-    if (!session.isDemo || id === 'dashboard' || (id === 'chat' && role !== 'ADMIN')) return true;
-    if (role === 'FARMER') return ['plots', 'journal', 'costs', 'listings'].includes(id);
-    return role === 'TRADER' && ['marketplace', 'offers'].includes(id);
-  });
   const primary = primaryByRole[role].filter((id) => modules.some((item) => item.id === id));
 
   const primaryLinks = primary.map((id) => {
@@ -192,24 +226,35 @@ export function WebLayout() {
         <aside id="workspace-menu" className={menuOpen ? 'workspace-menu open' : 'workspace-menu'}>
           <nav aria-label="Khu vực làm việc">
             <h2>Khu vực làm việc</h2>
-            {modules.map(({ id, label }) => {
-              const active = isModuleActive(id, role, pathname, search);
+            {sidebarGroups.map((group) => {
+              const groupModules = modules.filter((m) =>
+                (group.ids as readonly string[]).includes(m.id),
+              );
+              if (groupModules.length === 0) return null;
               return (
-                <Link
-                  key={id}
-                  to={modulePathMap[id]}
-                  aria-current={active ? 'page' : undefined}
-                  className={active ? 'active' : undefined}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <UiIcon name={id} />
-                  <span>{label}</span>
-                  {id === 'notifications' && unreadCount > 0 && (
-                    <span className="nav-unread-pill">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link>
+                <div key={group.key} className="workspace-menu-group">
+                  <p className="workspace-menu-group-label">{group.label}</p>
+                  {groupModules.map(({ id, label }) => {
+                    const active = isModuleActive(id, role, pathname, search);
+                    return (
+                      <Link
+                        key={id}
+                        to={modulePathMap[id]}
+                        aria-current={active ? 'page' : undefined}
+                        className={active ? 'active' : undefined}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <UiIcon name={id} />
+                        <span>{label}</span>
+                        {id === 'notifications' && unreadCount > 0 && (
+                          <span className="nav-unread-pill">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               );
             })}
           </nav>

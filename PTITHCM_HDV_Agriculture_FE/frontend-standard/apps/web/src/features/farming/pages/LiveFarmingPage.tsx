@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { selectedPlotKey } from '../demo';
 import {
@@ -15,10 +15,24 @@ import './farming.css';
 
 type Page = 'plots' | 'journal' | 'costs';
 
+const COST_CATEGORY_PRESETS = [
+  'Phân bón',
+  'Thuốc BVTV',
+  'Lúa giống',
+  'Công làm / Cắt gặt',
+  'Bơm nước',
+] as const;
+
 export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: string }) {
   const [plotId, selectPlot] = useState(() => sessionStorage.getItem(selectedPlotKey) ?? '');
   const [seasonId, selectSeason] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [costCategory, setCostCategory] = useState('');
+
+  useEffect(() => {
+    setSuccessMsg('');
+    setCostCategory('');
+  }, [page]);
 
   const plots = usePlots(accountId, true);
   const plot = plots.data?.items.find((item) => item.plotId === plotId) ?? plots.data?.items[0];
@@ -53,7 +67,7 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
     <div className="farm-page">
       <header className="farm-heading">
         <div>
-          <p className="farm-kicker">CANH TÁC · MÁY CHỦ THỰC</p>
+          <p className="farm-kicker">SỔ TAY CANH TÁC</p>
           <h1>{title}</h1>
           <p>{subtitle}</p>
         </div>
@@ -324,6 +338,7 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
           <FarmingForm
             key={page + season.cropSeasonId}
             title={page === 'journal' ? 'Ghi công việc mới' : 'Thêm khoản chi mới'}
+            submitLabel={page === 'journal' ? 'Lưu công việc' : 'Lưu khoản chi'}
             defaultOpen
             busy={save.isPending}
             submit={async (fields) => {
@@ -341,12 +356,13 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
                 await save.mutateAsync({
                   path: seasonPath + '/costs',
                   body: {
-                    category: String(fields.category ?? '').trim(),
+                    category: String(fields.category ?? costCategory).trim(),
                     amount: String(fields.amount ?? '0'),
                     incurredDate: String(fields.incurredDate ?? ''),
                     description: String(fields.description ?? '').trim() || undefined,
                   },
                 });
+                setCostCategory('');
                 setSuccessMsg('Đã lưu khoản chi mới.');
               }
             }}
@@ -370,32 +386,48 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
                 </label>
               </div>
             ) : (
-              <div className="farm-form-row">
-                <label>
-                  Loại chi phí
-                  <input
-                    name="category"
-                    required
-                    maxLength={50}
-                    placeholder="Phân bón, Giống, Thuốc…"
-                  />
-                </label>
-                <label>
-                  Số tiền (VNĐ)
-                  <input
-                    name="amount"
-                    required
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="1200000"
-                  />
-                </label>
-                <label>
-                  Ngày chi
-                  <input name="incurredDate" required type="date" defaultValue={todayIso} />
-                </label>
-              </div>
+              <>
+                <div className="farm-chip-row" role="group" aria-label="Chọn nhanh loại chi phí">
+                  {COST_CATEGORY_PRESETS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className={`farm-chip-btn ${costCategory === preset ? 'active' : ''}`}
+                      onClick={() => setCostCategory(preset)}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+                <div className="farm-form-row">
+                  <label>
+                    Loại chi phí
+                    <input
+                      name="category"
+                      required
+                      maxLength={50}
+                      value={costCategory}
+                      onChange={(e) => setCostCategory(e.target.value)}
+                      placeholder="Phân bón, Giống, Thuốc…"
+                    />
+                  </label>
+                  <label>
+                    Số tiền (VNĐ)
+                    <input
+                      name="amount"
+                      required
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="1200000"
+                    />
+                  </label>
+                  <label>
+                    Ngày chi
+                    <input name="incurredDate" required type="date" defaultValue={todayIso} />
+                  </label>
+                </div>
+              </>
             )}
             <label>
               Ghi chú
@@ -475,12 +507,14 @@ export function LiveFarmingPage({ page, accountId }: { page: Page; accountId: st
 
 function FarmingForm({
   title,
+  submitLabel,
   busy,
   defaultOpen = false,
   submit,
   children,
 }: {
   title: string;
+  submitLabel?: string;
   busy: boolean;
   defaultOpen?: boolean;
   submit: (body: Record<string, FormDataEntryValue>) => Promise<unknown>;
@@ -504,7 +538,7 @@ function FarmingForm({
       >
         {children}
         <button className="farm-primary" disabled={busy}>
-          {busy ? 'Đang lưu…' : title}
+          {busy ? 'Đang lưu…' : (submitLabel ?? title)}
         </button>
       </form>
     </details>

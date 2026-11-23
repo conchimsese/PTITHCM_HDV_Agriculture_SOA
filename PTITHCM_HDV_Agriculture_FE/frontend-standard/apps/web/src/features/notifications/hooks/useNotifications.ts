@@ -39,3 +39,12 @@ export function useMarkRead() {
     onError: () => client.invalidateQueries({ queryKey: ['notifications', session?.accountId] }),
   });
 }
+export function useMarkPageRead() {
+  const session = useSession();
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => api.markRead(id))),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['notifications', session?.accountId] }),
+    onError: () => client.invalidateQueries({ queryKey: ['notifications', session?.accountId] }),
+  });
+}

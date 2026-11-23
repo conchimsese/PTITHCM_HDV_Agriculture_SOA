@@ -643,7 +643,8 @@
 .recap-price {
   font-size: 18px;
   font-weight: 750;
-  color: #d8ad47;
+  color: #885b17;
+  font-variant-numeric: tabular-nums;
 }
 
 .recap-details {
@@ -840,4 +841,64 @@
   border-radius: 6px;
   padding: 3px 8px;
   font-size: 12px;
+}
+
+.seed-quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.seed-chip-btn {
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #b9cbbd;
+  background: #f8faf7;
+  color: #164735;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.seed-chip-btn:hover {
+  background: #edf5ed;
+}
+.seed-chip-btn.active {
+  background: #164735;
+  border-color: #164735;
+  color: #ffffff;
+}
+.card-price-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.price-per-kg {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #526459;
+}
+.quick-offer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.quick-offer-chip {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #b9cbbd;
+  background: #ffffff;
+  color: #164735;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.quick-offer-chip:hover {
+  background: #edf5ed;
+  border-color: #246b45;
 }
